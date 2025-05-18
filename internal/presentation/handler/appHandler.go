@@ -1,13 +1,17 @@
 package handler
 
-import "github.com/Thomas3246/EquipAccounting/internal/application/service"
+import (
+	"github.com/Thomas3246/EquipAccounting/internal/application/service"
+)
 
 type AppHandler struct {
-	WorkSationHandler *WorkSationHandler
+	WorkStationHandler *WorkStationHandler
+	UserHandler        *UserHandler
 }
 
-func NewAppHandler(service *service.AppclicationService) *AppHandler {
+func NewAppHandler(service *service.ApplicationService) *AppHandler {
 	return &AppHandler{
-		WorkSationHandler: NewWorkStationHandler(service.WorkStationService),
+		WorkStationHandler: NewWorkStationHandler(service.WorkStationService),
+		UserHandler:        NewUserHandler(service.UserService),
 	}
 }

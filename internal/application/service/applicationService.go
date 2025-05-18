@@ -6,15 +6,20 @@ import (
 	"github.com/Thomas3246/EquipAccounting/internal/infrastructure/database/sqlite"
 )
 
-type AppclicationService struct {
+type ApplicationService struct {
 	WorkStationService *WorkStationService
+	UserService        *UserService
 }
 
-func NewAppService(db *sql.DB) *AppclicationService {
+func NewAppService(db *sql.DB) *ApplicationService {
 	workStationRepo := sqlite.NewWorkStationRepo(db)
 	workStationService := NewWorkStationService(workStationRepo)
 
-	return &AppclicationService{
+	userRepo := sqlite.NewUserRepo(db)
+	UserService := NewUserService(userRepo)
+
+	return &ApplicationService{
 		WorkStationService: workStationService,
+		UserService:        UserService,
 	}
 }
