@@ -15,7 +15,8 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 	r.Use(basicMW.Recoverer)
 
 	r.Group(func(r chi.Router) {
-		r.Get("/login", h.UserHandler.LoginPage)
+		r.Get("/login", h.UserHandler.LoginGet)
+		r.Post("/login", h.UserHandler.LoginPost)
 	})
 
 	return r
