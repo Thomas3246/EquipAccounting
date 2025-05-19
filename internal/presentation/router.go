@@ -14,9 +14,16 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 	r.Use(middleware.LoggingMiddleware)
 	r.Use(basicMW.Recoverer)
 
+	// non auth
 	r.Group(func(r chi.Router) {
 		r.Get("/login", h.UserHandler.LoginGet)
 		r.Post("/login", h.UserHandler.LoginPost)
+		r.Get("/logout", h.UserHandler.Logout)
+	})
+
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.AuthMidlleWare)
+		r.Get("/dashboard", h.UserHandler.Dashboard)
 	})
 
 	return r
