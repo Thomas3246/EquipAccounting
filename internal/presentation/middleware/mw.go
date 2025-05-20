@@ -23,3 +23,26 @@ func AuthMidlleWare(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+func AdminMiddleWare(nex http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("auth")
+		if err != nil {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+
+		role, ok := session.GetUserRoleFromCookie(cookie.Value)
+		if !ok {
+			http.Error(w, "Invalid Session", http.StatusUnauthorized)
+			return
+		}
+
+		if role != "admin" {
+			http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+			return
+		}
+
+		nex.ServeHTTP(w, r)
+	})
+}

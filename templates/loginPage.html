@@ -16,7 +16,9 @@
                     type="login" 
                     id="login" 
                     name="login" 
-                    value="{{.Login}}"
+                    {{if .Login}}
+                        value="{{.Login}}"
+                    {{end}}
                     required
                 >
             </div>
@@ -28,7 +30,6 @@
                     id="password" 
                     name="password" 
                     required
-                    minlength="8"
                 >
             </div>
 

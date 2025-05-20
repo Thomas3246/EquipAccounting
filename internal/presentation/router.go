@@ -19,11 +19,20 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 		r.Get("/login", h.UserHandler.LoginGet)
 		r.Post("/login", h.UserHandler.LoginPost)
 		r.Get("/logout", h.UserHandler.Logout)
+
 	})
 
+	// auth
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.AuthMidlleWare)
 		r.Get("/dashboard", h.UserHandler.Dashboard)
+
+		// admin only
+		r.Group(func(r chi.Router) {
+			r.Use(middleware.AdminMiddleWare)
+			r.Get("/register", h.UserHandler.Register)
+		})
+
 	})
 
 	return r

@@ -17,7 +17,7 @@ func NewUserService(repo database.UserRepo) *UserService {
 	return &UserService{repo: repo}
 }
 
-func (s *UserService) Authenticate(login, password string) (*domain.User, error) {
+func (s *UserService) Authenticate(login string, password string) (*domain.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*5))
 	defer cancel()
 
@@ -36,4 +36,31 @@ func (s *UserService) Authenticate(login, password string) (*domain.User, error)
 	}
 
 	return user, nil
+}
+
+func (s *UserService) Register(login string, password string, role string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if login == "" || password == "" || role == "" {
+		return ErrNullParameter
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 10)
+	if err != nil {
+		return err
+	}
+
+	user := &domain.User{
+		Login:    login,
+		Password: string(hashedPassword),
+		Role:     role,
+	}
+
+	err = s.repo.Create(ctx, user)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

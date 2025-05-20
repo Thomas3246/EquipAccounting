@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"text/template"
@@ -93,4 +94,28 @@ func (h *UserHandler) Dashboard(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Server Error", http.StatusInternalServerError)
 		log.Println("Template Execute Error: ", err)
 	}
+}
+
+func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query()
+
+	login := query.Get("login")
+	password := query.Get("password")
+	role := query.Get("role")
+
+	err := h.service.Register(login, password, role)
+	if err != nil {
+		if err == service.ErrNullParameter {
+			http.Error(w, "Bad Request (missing parameter)", http.StatusBadRequest)
+			return
+		}
+
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при создании пользователя: ", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	resultStr := fmt.Sprintf("User created: %s %s", login, password)
+	w.Write([]byte(resultStr))
 }
