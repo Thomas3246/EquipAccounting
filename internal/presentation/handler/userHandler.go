@@ -81,7 +81,7 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) Dashboard(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles(templateloader.GetTemplatePath("dashboard.html"))
+	tmpl, err := template.ParseFiles(templateloader.GetTemplatePath("base.html"), templateloader.GetTemplatePath("dashboard.html"))
 	if err != nil {
 		http.Error(w, "Server Error", http.StatusInternalServerError)
 		log.Println("Template Parse Error: ", err)

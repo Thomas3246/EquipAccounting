@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{.Title}}</title>
+</head>
+<body>
+    <!-- Общая шапка -->
+    <header>
+        <nav>
+            <a href="/">Главная</a>
+            <a href="/dashboard">Заявки</a>
+        </nav>
+    </header>
+
+    <!-- Контентная часть (будет меняться) -->
+    <main>
+        {{template "content" .}}
+    </main>
+
+    <!-- Общий футер -->
+    <!-- <footer>...</footer> -->
+</body>
+</html>
