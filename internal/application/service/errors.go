@@ -7,4 +7,5 @@ var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
 	ErrNullParameter      = errors.New("missing required parameter")
 	ErrInvalidRole        = errors.New("invalid role")
+	ErrInvalidParameter   = errors.New("invalid parameter")
 )

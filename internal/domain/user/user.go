@@ -1,8 +1,10 @@
 package domain
 
 type User struct {
-	Id       int
-	Login    string
-	Password string // HASH ONLY
-	Role     string
+	Id           int
+	Name         string
+	Login        string
+	Password     string // HASH ONLY
+	IsAdmin      int
+	DepartmentId int
 }

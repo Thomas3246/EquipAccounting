@@ -8,7 +8,7 @@ import (
 
 	"github.com/Thomas3246/EquipAccounting/internal/application/service"
 	"github.com/Thomas3246/EquipAccounting/pkg/session"
-	templateloader "github.com/Thomas3246/EquipAccounting/pkg/templateLoader"
+	"github.com/Thomas3246/EquipAccounting/pkg/templateloader"
 )
 
 type UserHandler struct {
@@ -70,7 +70,7 @@ func (h *UserHandler) LoginPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session.SetAuthCookie(w, user.Login, user.Role)
+	session.SetAuthCookie(w, user.Login, user.DepartmentId, user.IsAdmin)
 
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
@@ -101,9 +101,11 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 	login := query.Get("login")
 	password := query.Get("password")
-	role := query.Get("role")
+	name := query.Get("name")
+	isAdmin := query.Get("isAdmin")
+	department := query.Get("department")
 
-	err := h.service.Register(login, password, role)
+	err := h.service.Register(login, password, name, isAdmin, department)
 	if err != nil {
 		if err == service.ErrNullParameter {
 			http.Error(w, "Bad Request (missing parameter)", http.StatusBadRequest)

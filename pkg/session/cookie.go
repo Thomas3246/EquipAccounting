@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-func SetAuthCookie(w http.ResponseWriter, login string, role string) {
-	value := fmt.Sprintf("%s|%s", login, role)
+func SetAuthCookie(w http.ResponseWriter, login string, departmentId int, isAdmin int) {
+	value := fmt.Sprintf("%s|%d|%d", login, departmentId, isAdmin)
 	fmt.Print(value)
 
 	http.SetCookie(w, &http.Cookie{

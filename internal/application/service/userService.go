@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	domain "github.com/Thomas3246/EquipAccounting/internal/domain/user"
@@ -38,11 +39,11 @@ func (s *UserService) Authenticate(login string, password string) (*domain.User,
 	return user, nil
 }
 
-func (s *UserService) Register(login string, password string, role string) error {
+func (s *UserService) Register(login string, password string, name string, isAdmin string, department string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if login == "" || password == "" || role == "" {
+	if login == "" || password == "" || name == "" || isAdmin == "" || department == "" {
 		return ErrNullParameter
 	}
 
@@ -51,10 +52,22 @@ func (s *UserService) Register(login string, password string, role string) error
 		return err
 	}
 
+	intIsAdmin, err := strconv.Atoi(isAdmin)
+	if err != nil {
+		return ErrInvalidParameter
+	}
+
+	intDepartment, err := strconv.Atoi(department)
+	if err != nil {
+		return ErrInvalidParameter
+	}
+
 	user := &domain.User{
-		Login:    login,
-		Password: string(hashedPassword),
-		Role:     role,
+		Login:        login,
+		Password:     string(hashedPassword),
+		Name:         name,
+		IsAdmin:      intIsAdmin,
+		DepartmentId: intDepartment,
 	}
 
 	err = s.repo.Create(ctx, user)

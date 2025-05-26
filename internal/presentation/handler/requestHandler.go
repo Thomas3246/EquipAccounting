@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/Thomas3246/EquipAccounting/internal/application/service"
@@ -11,11 +12,11 @@ type RequestHandler struct {
 }
 
 func NewRequestHandler(service *service.RequestService) *RequestHandler {
-	return &RequestHandler{service: service}
+	return &RequestHandler{service: *service}
 }
 
 func (h *RequestHandler) AllActiveRequests(w http.ResponseWriter, r *http.Request) {
 
-	добавить функционал
+	fmt.Println("requests")
 
 }
