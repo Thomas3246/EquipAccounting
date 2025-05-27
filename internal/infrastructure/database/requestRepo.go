@@ -10,4 +10,5 @@ type RequestRepo interface {
 	GetAllActive(context.Context) ([]domain.Request, error)
 	GetAllActiveDetail(context.Context) ([]domain.RequestView, error)
 	GetAllActiveForUserDetail(context.Context, string) ([]domain.RequestView, error)
+	GetAllUserActiveDetail(context.Context, string) ([]domain.RequestView, error)
 }

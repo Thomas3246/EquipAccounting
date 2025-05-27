@@ -1,11 +1,19 @@
 <!DOCTYPE html>
 <html lang="ru">
 {{define "content"}}
+
+    <header>
+        <nav>
+            <a href="/allactive">Заявки</a>
+            <a href="/allactive/{{.UserLogin}}">Мои заявки</a>
+        </nav>
+    </header>
+
     <div class="request-container">
         <h1>Все активные заявки вашего отдела:</h1>
 
-        {{if .}}
-            {{range .}}
+        {{if .Requests}}
+            {{range .Requests}}
             <div class="request-item">
                 <div class="request-field"><strong>ID:</strong> {{.Id}}</div>
                 <div class="request-field"><strong>Тип:</strong> {{.Type}}</div>

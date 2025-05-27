@@ -75,7 +75,7 @@ func (r *RequestRepo) GetAllActiveDetail(ctx context.Context) (requests []domain
 }
 
 func (r *RequestRepo) GetAllActiveForUserDetail(ctx context.Context, login string) (requests []domain.RequestView, err error) {
-	query := `SELECT request.id, requestType.name, description, users.name, requestStatus.name, request.createdAt, request.closedAt, equipment.invNum || ' - ' || equipDirectory.name
+	query := `SELECT request.id, requestType.name, description, users.name, requestStatus.name, request.createdAt, COALESCE(request.closedAt, '') as closedAt, equipment.invNum || ' - ' || equipDirectory.name
 			  FROM request
 			  INNER JOIN requestType ON request.requestType = requestType.id
 			  INNER JOIN users ON request.requestAuthor = users.id
@@ -86,6 +86,39 @@ func (r *RequestRepo) GetAllActiveForUserDetail(ctx context.Context, login strin
 			  INNER JOIN department ON requester.department = department.id
 			  WHERE 
 			  request.status = 1 AND users.department = department.id`
+
+	rows, err := r.db.QueryContext(ctx, query, login)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		r := domain.RequestView{}
+		err = rows.Scan(&r.Id, &r.Type, &r.Description, &r.Author, &r.Status, &r.CreatedAt, &r.ClosedAt, &r.Equipment)
+		if err != nil {
+			return nil, err
+		}
+		requests = append(requests, r)
+	}
+
+	return requests, nil
+}
+
+func (r *RequestRepo) GetAllUserActiveDetail(ctx context.Context, login string) (requests []domain.RequestView, err error) {
+	query := `SELECT request.id, requestType.name AS type_name, request.description, users.name AS author_name, requestStatus.name AS status_name, request.createdAt, 
+			  COALESCE(request.closedAt, '') as closedAt, equipment.invNum || ' - ' || equipDirectory.name AS equipment_info
+			  FROM request
+			  INNER JOIN requestType ON request.requestType = requestType.id
+			  INNER JOIN users ON request.requestAuthor = users.id
+			  INNER JOIN requestStatus ON request.status = requestStatus.id
+			  INNER JOIN equipment ON request.equipment = equipment.id
+			  INNER JOIN equipDirectory ON equipment.directory = equipDirectory.id
+			  WHERE request.status = 1 AND users.login = ?`
 
 	rows, err := r.db.QueryContext(ctx, query, login)
 

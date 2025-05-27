@@ -50,3 +50,24 @@ func (s *RequestService) GetAllActive(cookieValue string) (requests []domain.Req
 
 	return nil, ErrInvalidCookieParameter
 }
+
+func (s *RequestService) GetAllUserActive(cookieValue string, requestedLogin string) (requests []domain.RequestView, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	parts := strings.Split(cookieValue, "|")
+	if len(parts) != 2 {
+		return nil, err
+	}
+
+	if requestedLogin == parts[0] || parts[1] == "1" {
+		requests, err = s.repo.GetAllUserActiveDetail(ctx, requestedLogin)
+		if err != nil {
+			return nil, err
+		}
+		return requests, nil
+	}
+
+	return nil, ErrNoAccess
+
+}

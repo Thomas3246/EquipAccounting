@@ -9,4 +9,5 @@ var (
 	ErrInvalidRole            = errors.New("invalid role")
 	ErrInvalidParameter       = errors.New("invalid parameter")
 	ErrInvalidCookieParameter = errors.New("invalid cookie parameter")
+	ErrNoAccess               = errors.New("no access to page")
 )
