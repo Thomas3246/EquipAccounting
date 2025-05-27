@@ -70,9 +70,9 @@ func (h *UserHandler) LoginPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session.SetAuthCookie(w, user.Login, user.DepartmentId, user.IsAdmin)
+	session.SetAuthCookie(w, user.Login, user.IsAdmin)
 
-	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+	http.Redirect(w, r, "/allactive", http.StatusSeeOther)
 }
 
 func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {

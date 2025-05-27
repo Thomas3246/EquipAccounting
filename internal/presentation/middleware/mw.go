@@ -32,14 +32,14 @@ func AdminMiddleWare(nex http.Handler) http.Handler {
 			return
 		}
 
-		role, ok := session.GetUserRoleFromCookie(cookie.Value)
+		isAdmin, ok := session.GetIsAdminFromCookie(cookie.Value)
 		if !ok {
 			http.Error(w, "Invalid Session", http.StatusUnauthorized)
 			return
 		}
 
-		if role != "admin" {
-			http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+		if !isAdmin {
+			http.Redirect(w, r, "/allactive", http.StatusSeeOther)
 			return
 		}
 

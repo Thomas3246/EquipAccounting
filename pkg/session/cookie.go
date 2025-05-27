@@ -3,12 +3,13 @@ package session
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
 
-func SetAuthCookie(w http.ResponseWriter, login string, departmentId int, isAdmin int) {
-	value := fmt.Sprintf("%s|%d|%d", login, departmentId, isAdmin)
+func SetAuthCookie(w http.ResponseWriter, login string, isAdmin int) {
+	value := fmt.Sprintf("%s|%d", login, isAdmin)
 	fmt.Print(value)
 
 	http.SetCookie(w, &http.Cookie{
@@ -35,14 +36,19 @@ func ClearAuthCookie(w http.ResponseWriter) {
 	})
 }
 
-func GetUserRoleFromCookie(cookieValue string) (string, bool) {
+func GetIsAdminFromCookie(cookieValue string) (bool, bool) {
 
 	parts := strings.Split(cookieValue, "|")
 	if len(parts) != 2 {
-		return "", false
+		return false, false
 	}
 
-	return parts[1], true
+	isAdmin, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return false, false
+	}
+
+	return isAdmin != 0, true
 }
 
 func IsAuthenticated(r *http.Request) bool {

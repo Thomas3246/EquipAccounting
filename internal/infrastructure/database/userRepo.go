@@ -3,7 +3,7 @@ package database
 import (
 	"context"
 
-	domain "github.com/Thomas3246/EquipAccounting/internal/domain/user"
+	"github.com/Thomas3246/EquipAccounting/internal/domain"
 )
 
 type UserRepo interface {

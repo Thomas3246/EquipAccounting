@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	domain "github.com/Thomas3246/EquipAccounting/internal/domain/user"
+	"github.com/Thomas3246/EquipAccounting/internal/domain"
 	"github.com/Thomas3246/EquipAccounting/internal/infrastructure/database"
 	"golang.org/x/crypto/bcrypt"
 )

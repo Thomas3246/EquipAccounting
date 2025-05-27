@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+{{define "content"}}
+    <div class="request-container">
+        <h1>Все активные заявки вашего отдела:</h1>
+
+        {{if .}}
+            {{range .}}
+            <div class="request-item">
+                <div class="request-field"><strong>ID:</strong> {{.Id}}</div>
+                <div class="request-field"><strong>Тип:</strong> {{.Type}}</div>
+                <div class="request-field"><strong>Описание:</strong> {{.Description}}</div>
+                <div class="request-field"><strong>Автор:</strong> {{.Author}}</div>
+                <div class="request-field"><strong>Статус:</strong> {{.Status}}</div>
+                <div class="request-field"><strong>Создана:</strong> {{.CreatedAt}}</div>
+                <div class="request-field"><strong>Закрыта:</strong> {{.ClosedAt}}</div>
+                <div class="request-field"><strong>Оборудование:</strong> {{.Equipment}}</div>
+            </div>
+            <hr>
+            {{end}}
+        {{else}}
+            <div class="no-requests">
+                <p>Нет активных заявок в вашем отделе.</p>
+            </div>
+        {{end}}
+
+        <form action="/logout" method="GET">
+            <button type="submit">Выйти</button>
+        </form>
+    </div>
+{{end}}
+</html>

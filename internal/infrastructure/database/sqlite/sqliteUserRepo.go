@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	domain "github.com/Thomas3246/EquipAccounting/internal/domain/user"
+	"github.com/Thomas3246/EquipAccounting/internal/domain"
 	_ "modernc.org/sqlite"
 )
 
@@ -17,8 +17,8 @@ func NewUserRepo(db *sql.DB) *UserRepo {
 }
 
 func (r *UserRepo) Create(ctx context.Context, user *domain.User) error {
-	query := "INSERT INTO users(login, password, role) VALUES (?,?,?)"
-	_, err := r.db.ExecContext(ctx, query, user.Login, user.Password, user.Role)
+	query := "INSERT INTO users(login, password, name, isAdmin, department) VALUES (?,?,?,?,?)"
+	_, err := r.db.ExecContext(ctx, query, user.Login, user.Password, user.Name, user.IsAdmin, user.DepartmentId)
 	if err != nil {
 		return err
 	}
@@ -26,13 +26,13 @@ func (r *UserRepo) Create(ctx context.Context, user *domain.User) error {
 }
 
 func (r *UserRepo) GetByLogin(ctx context.Context, login string) (*domain.User, error) {
-	query := "SELECT id, password, role FROM users WHERE login = ?"
+	query := "SELECT id, password, name, isAdmin, department FROM users WHERE login = ?"
 
 	row := r.db.QueryRowContext(ctx, query, login)
 
 	user := &domain.User{Login: login}
 
-	err := row.Scan(&user.Id, &user.Password, &user.Role)
+	err := row.Scan(&user.Id, &user.Password, &user.Name, &user.IsAdmin, &user.DepartmentId)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
