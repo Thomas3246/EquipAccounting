@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="ru">
+{{define "content"}}
+
+    <h1>Новая заявка</h1>
+
+    <div class="request-container">
+        <select name="equipment_id" id="equipment" required>
+            {{range .Equipment}}
+                <option value="{{.ID}}">{{.InvNum}} - {{.Name}} ({{.Location}})</option>
+            {{end}}
+        </select>
+    </div>
+{{end}}
+</html>

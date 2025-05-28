@@ -4,13 +4,20 @@
 
     <header>
         <nav>
-            <a href="/allactive">Заявки</a>
-            <a href="/allactive/{{.UserLogin}}">Мои заявки</a>
+            <a href="/allactive">Активные заявки</a>
+            <a href="/allactive/{{.UserLogin}}">Мои активные заявки</a>
+            <a href="/allclosed">Закрытые заявки</a>
+            <a href="/allclosed/{{.UserLogin}}">Мои закрытые заявки</a>
         </nav>
     </header>
 
     <div class="request-container">
-        <h1>Все активные заявки вашего отдела:</h1>
+        <h1>
+            {{if eq .Flag "allactive"}}Активные заявки вашего отдела{{end}}
+            {{if eq .Flag "alluseractive"}}Ваши активные заявки{{end}}
+            {{if eq .Flag "allclosed"}}Закрытые заявки вашего отдела{{end}}
+            {{if eq .Flag "alluserclosed"}}Ваши закрытые заявки{{end}}
+        </h1>
 
         {{if .Requests}}
             {{range .Requests}}
@@ -28,7 +35,7 @@
             {{end}}
         {{else}}
             <div class="no-requests">
-                <p>Нет активных заявок в вашем отделе.</p>
+                <p>Нет подходящих заявок.</p>
             </div>
         {{end}}
 

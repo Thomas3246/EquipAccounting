@@ -71,3 +71,57 @@ func (s *RequestService) GetAllUserActive(cookieValue string, requestedLogin str
 	return nil, ErrNoAccess
 
 }
+
+func (s *RequestService) GetAllClosed(cookieValue string) (requests []domain.RequestView, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	parts := strings.Split(cookieValue, "|")
+	if len(parts) != 2 {
+		return nil, err
+	}
+
+	isAdmin, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return nil, err
+	}
+
+	if isAdmin == 1 {
+		requests, err = s.repo.GetAllClosedDetail(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return requests, nil
+	}
+
+	if isAdmin == 0 {
+		requests, err = s.repo.GetAllClosedForUserDetail(ctx, parts[0])
+		if err != nil {
+			return nil, err
+		}
+		return requests, nil
+	}
+
+	return nil, ErrInvalidCookieParameter
+}
+
+func (s *RequestService) GetAllUserClosed(cookieValue string, requestedLogin string) (requests []domain.RequestView, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	parts := strings.Split(cookieValue, "|")
+	if len(parts) != 2 {
+		return nil, err
+	}
+
+	if requestedLogin == parts[0] || parts[1] == "1" {
+		requests, err = s.repo.GetAllUserClosedDetail(ctx, requestedLogin)
+		if err != nil {
+			return nil, err
+		}
+		return requests, nil
+	}
+
+	return nil, ErrNoAccess
+
+}

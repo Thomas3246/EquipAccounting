@@ -15,18 +15,23 @@ import (
 type TemplateData struct {
 	Requests  []domain.RequestView
 	UserLogin string
+	Flag      string
 }
 
 type RequestHandler struct {
-	service service.RequestService
+	reqService  service.RequestService
+	userService service.UserService
 }
 
-func NewRequestHandler(service *service.RequestService) *RequestHandler {
-	return &RequestHandler{service: *service}
+func NewRequestHandler(reqService *service.RequestService, userService *service.UserService) *RequestHandler {
+	return &RequestHandler{
+		reqService:  *reqService,
+		userService: *userService,
+	}
 }
 
 func (h *RequestHandler) AllActiveRequests(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles(templateloader.GetTemplatePath("base.html"), templateloader.GetTemplatePath("allactive.html"))
+	tmpl, err := template.ParseFiles(templateloader.GetTemplatePath("base.html"), templateloader.GetTemplatePath("requests.html"))
 	if err != nil {
 		http.Error(w, "Server Error", http.StatusInternalServerError)
 		log.Println("Template Parse Error: ", err)
@@ -46,7 +51,7 @@ func (h *RequestHandler) AllActiveRequests(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	requests, err := h.service.GetAllActive(cookie.Value)
+	requests, err := h.reqService.GetAllActive(cookie.Value)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		log.Println("Ошибка при извлечении заявок: ", err)
@@ -56,6 +61,7 @@ func (h *RequestHandler) AllActiveRequests(w http.ResponseWriter, r *http.Reques
 	templData := TemplateData{
 		Requests:  requests,
 		UserLogin: parts[0],
+		Flag:      "allactive",
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -67,7 +73,7 @@ func (h *RequestHandler) AllActiveRequests(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *RequestHandler) AllActiveUserRequests(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles(templateloader.GetTemplatePath("base.html"), templateloader.GetTemplatePath("allactive.html"))
+	tmpl, err := template.ParseFiles(templateloader.GetTemplatePath("base.html"), templateloader.GetTemplatePath("requests.html"))
 	if err != nil {
 		http.Error(w, "Server Error", http.StatusInternalServerError)
 		log.Println("Template Parse Error: ", err)
@@ -83,7 +89,7 @@ func (h *RequestHandler) AllActiveUserRequests(w http.ResponseWriter, r *http.Re
 
 	requestedLogin := chi.URLParam(r, "login")
 
-	requests, err := h.service.GetAllUserActive(cookie.Value, requestedLogin)
+	requests, err := h.reqService.GetAllUserActive(cookie.Value, requestedLogin)
 	if err != nil {
 		if err == service.ErrNoAccess {
 			http.Error(w, "No Access To The Page", http.StatusForbidden)
@@ -102,6 +108,7 @@ func (h *RequestHandler) AllActiveUserRequests(w http.ResponseWriter, r *http.Re
 	templData := TemplateData{
 		Requests:  requests,
 		UserLogin: parts[0],
+		Flag:      "alluseractive",
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -110,4 +117,110 @@ func (h *RequestHandler) AllActiveUserRequests(w http.ResponseWriter, r *http.Re
 		http.Error(w, "Server Error", http.StatusInternalServerError)
 		log.Println("Template Execute Error: ", err)
 	}
+}
+
+func (h *RequestHandler) AllClosedRequests(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles(templateloader.GetTemplatePath("base.html"), templateloader.GetTemplatePath("requests.html"))
+	if err != nil {
+		http.Error(w, "Server Error", http.StatusInternalServerError)
+		log.Println("Template Parse Error: ", err)
+		return
+	}
+
+	cookie, err := r.Cookie("auth")
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при извлечении cookie: ", err)
+		return
+	}
+
+	parts := strings.Split(cookie.Value, "|")
+	if len(parts) != 2 {
+		http.Error(w, "Invalid Cookie Value", http.StatusInternalServerError)
+		return
+	}
+
+	requests, err := h.reqService.GetAllClosed(cookie.Value)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при извлечении заявок: ", err)
+		return
+	}
+
+	templData := TemplateData{
+		Requests:  requests,
+		UserLogin: parts[0],
+		Flag:      "allclosed",
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	err = tmpl.Execute(w, templData)
+	if err != nil {
+		http.Error(w, "Server Error", http.StatusInternalServerError)
+		log.Println("Template Execute Error: ", err)
+	}
+}
+
+func (h *RequestHandler) AllClosedUserRequests(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles(templateloader.GetTemplatePath("base.html"), templateloader.GetTemplatePath("requests.html"))
+	if err != nil {
+		http.Error(w, "Server Error", http.StatusInternalServerError)
+		log.Println("Template Parse Error: ", err)
+		return
+	}
+
+	cookie, err := r.Cookie("auth")
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при извлечении cookie: ", err)
+		return
+	}
+
+	requestedLogin := chi.URLParam(r, "login")
+
+	requests, err := h.reqService.GetAllUserClosed(cookie.Value, requestedLogin)
+	if err != nil {
+		if err == service.ErrNoAccess {
+			http.Error(w, "No Access To The Page", http.StatusForbidden)
+			return
+		}
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при извлечении заявок: ", err)
+		return
+	}
+
+	parts := strings.Split(cookie.Value, "|")
+	if len(parts) != 2 {
+		http.Error(w, "Invalid Cookie Value", http.StatusInternalServerError)
+		return
+	}
+	templData := TemplateData{
+		Requests:  requests,
+		UserLogin: parts[0],
+		Flag:      "alluserclosed",
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	err = tmpl.Execute(w, templData)
+	if err != nil {
+		http.Error(w, "Server Error", http.StatusInternalServerError)
+		log.Println("Template Execute Error: ", err)
+	}
+}
+
+func (h *RequestHandler) NewRequestGet(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles(templateloader.GetTemplatePath("base.html"), templateloader.GetTemplatePath("newRequest.html"))
+	if err != nil {
+		http.Error(w, "Server Error", http.StatusInternalServerError)
+		log.Println("Template Parse Error: ", err)
+		return
+	}
+
+	cookie, err := r.Cookie("auth")
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при извлечении cookie: ", err)
+		return
+	}
+
 }

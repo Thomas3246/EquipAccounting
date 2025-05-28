@@ -25,9 +25,14 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 	// auth
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.AuthMidlleWare)
-		r.Get("/dashboard", h.UserHandler.Dashboard)
+
 		r.Get("/allactive", h.RequestHandler.AllActiveRequests)
 		r.Get("/allactive/{login}", h.RequestHandler.AllActiveUserRequests)
+
+		r.Get("/allclosed", h.RequestHandler.AllClosedRequests)
+		r.Get("/allclosed/{login}", h.RequestHandler.AllClosedUserRequests)
+
+		r.Get("/newRequest", h.RequestHandler.NewRequest)
 
 		// admin only
 		r.Group(func(r chi.Router) {
