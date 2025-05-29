@@ -136,3 +136,23 @@ func (s *RequestService) GetRequestTypes() (types []domain.RequestType, err erro
 	}
 	return types, nil
 }
+
+func (s *RequestService) NewRequest(rType int, descr string, author int, equipment int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	request := domain.Request{
+		Type:        rType,
+		Description: descr,
+		Author:      author,
+		Status:      1,
+		CreatedAt:   time.Now().Format("2006-01-02 15:04"),
+		Equipment:   equipment,
+	}
+
+	err := s.repo.AddRequest(ctx, request)
+	if err != nil {
+		return err
+	}
+	return nil
+}

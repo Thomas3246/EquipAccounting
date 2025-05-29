@@ -261,3 +261,14 @@ func (r *RequestRepo) GetRequestTypes(ctx context.Context) (types []domain.Reque
 	}
 	return types, nil
 }
+
+func (r *RequestRepo) AddRequest(ctx context.Context, request domain.Request) error {
+	query := `INSERT INTO request (requestType, description, requestAuthor, status, createdAt, equipment) 
+			  VALUES (?,?,?,?,?,?)`
+
+	_, err := r.db.ExecContext(ctx, query, request.Type, request.Description, request.Author, request.Status, request.CreatedAt, request.Equipment)
+	if err != nil {
+		return err
+	}
+	return nil
+}

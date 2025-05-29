@@ -77,3 +77,14 @@ func (s *UserService) Register(login string, password string, name string, isAdm
 
 	return nil
 }
+
+func (s *UserService) GetUserByLogin(login string) (*domain.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 6*time.Second)
+	defer cancel()
+
+	user, err := s.repo.GetByLogin(ctx, login)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}

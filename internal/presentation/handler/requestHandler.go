@@ -3,6 +3,7 @@ package handler
 import (
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -261,4 +262,56 @@ func (h *RequestHandler) NewRequestGet(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Server Error", http.StatusInternalServerError)
 		log.Println("Template Execute Error: ", err)
 	}
+}
+
+func (h *RequestHandler) NewRequestPost(w http.ResponseWriter, r *http.Request) {
+
+	cookie, err := r.Cookie("auth")
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при извлечении cookie: ", err)
+		return
+	}
+
+	parts := strings.Split(cookie.Value, "|")
+	if len(parts) != 2 {
+		http.Error(w, "Invalid Cookie Value", http.StatusInternalServerError)
+		return
+	}
+
+	err = r.ParseForm()
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		log.Println("Ошибка при парсинге формы: ", err)
+		return
+	}
+
+	requestTypeId, err := strconv.Atoi(r.FormValue("request_type_id"))
+	if err != nil {
+		http.Error(w, "Invalid Request Type Id", http.StatusBadRequest)
+		return
+	}
+
+	equipmentId, err := strconv.Atoi(r.FormValue("equipment_id"))
+	if err != nil {
+		http.Error(w, "Invalid Equipment Id", http.StatusBadRequest)
+		return
+	}
+
+	description := r.FormValue("description")
+
+	user, err := h.userService.GetUserByLogin(parts[0])
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	err = h.reqService.NewRequest(requestTypeId, description, user.Id, equipmentId)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при добавлении заявки: ", err)
+		return
+	}
+
+	http.Redirect(w, r, "/allactive", http.StatusSeeOther)
 }

@@ -33,6 +33,7 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 		r.Get("/allclosed/{login}", h.RequestHandler.AllClosedUserRequests)
 
 		r.Get("/newRequest", h.RequestHandler.NewRequestGet)
+		r.Post("/newRequest", h.RequestHandler.NewRequestPost)
 
 		// admin only
 		r.Group(func(r chi.Router) {
