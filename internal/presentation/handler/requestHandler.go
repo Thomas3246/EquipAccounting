@@ -21,12 +21,14 @@ type TemplateData struct {
 type RequestHandler struct {
 	reqService  service.RequestService
 	userService service.UserService
+	eqService   service.EquipmentService
 }
 
-func NewRequestHandler(reqService *service.RequestService, userService *service.UserService) *RequestHandler {
+func NewRequestHandler(reqService *service.RequestService, userService *service.UserService, eqService *service.EquipmentService) *RequestHandler {
 	return &RequestHandler{
 		reqService:  *reqService,
 		userService: *userService,
+		eqService:   *eqService,
 	}
 }
 
@@ -223,4 +225,40 @@ func (h *RequestHandler) NewRequestGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	parts := strings.Split(cookie.Value, "|")
+	if len(parts) != 2 {
+		http.Error(w, "Invalid Cookie Value", http.StatusInternalServerError)
+		return
+	}
+
+	requestTypes, err := h.reqService.GetRequestTypes()
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при получении типов заявок: ", err)
+		return
+	}
+
+	equipment, err := h.eqService.GetAvailableEquipment(parts[0])
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при получении доступного оборудования: ", err)
+		return
+	}
+
+	templData := struct {
+		UserLogin    string
+		RequestTypes []domain.RequestType
+		Equipment    []domain.EquipmentView
+	}{
+		UserLogin:    parts[0],
+		RequestTypes: requestTypes,
+		Equipment:    equipment,
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	err = tmpl.Execute(w, templData)
+	if err != nil {
+		http.Error(w, "Server Error", http.StatusInternalServerError)
+		log.Println("Template Execute Error: ", err)
+	}
 }

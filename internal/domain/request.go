@@ -21,3 +21,8 @@ type RequestView struct {
 	ClosedAt    string
 	Equipment   string
 }
+
+type RequestType struct {
+	Id   int
+	Name string
+}

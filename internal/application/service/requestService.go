@@ -125,3 +125,14 @@ func (s *RequestService) GetAllUserClosed(cookieValue string, requestedLogin str
 	return nil, ErrNoAccess
 
 }
+
+func (s *RequestService) GetRequestTypes() (types []domain.RequestType, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	types, err = s.repo.GetRequestTypes(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return types, nil
+}

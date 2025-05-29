@@ -1,15 +1,54 @@
 <!DOCTYPE html>
 <html lang="ru">
 {{define "content"}}
+    <header>
+        <nav>
+            <a href="/allactive">Активные заявки</a>
+            <a href="/allactive/{{.UserLogin}}">Мои активные заявки</a>
+            <a href="/allclosed">Закрытые заявки</a>
+            <a href="/allclosed/{{.UserLogin}}">Мои закрытые заявки</a>
+            <a href="/newRequest">Новая заявка</a>
+        </nav>
+    </header>
 
-    <h1>Новая заявка</h1>
-
-    <div class="request-container">
-        <select name="equipment_id" id="equipment" required>
-            {{range .Equipment}}
-                <option value="{{.ID}}">{{.InvNum}} - {{.Name}} ({{.Location}})</option>
-            {{end}}
-        </select>
-    </div>
+    <main>
+        <h1>Создание новой заявки</h1>
+        
+        <form method="POST" action="/newRequest">
+            <div class="form-group">
+                <label for="equipment">Оборудование:</label>
+                <select name="equipment_id" id="equipment" required>
+                    <option value="" selected disabled>Выберите оборудование</option>
+                    {{range .Equipment}}
+                        <option value="{{.Id}}">{{.InvNum}} - {{.Directory}}</option>
+                    {{end}}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="request_type">Тип заявки:</label>
+                <select name="request_type_id" id="request_type" required>
+                    <option value="" selected disabled>Выберите тип заявки</option>
+                    {{range .RequestTypes}}
+                        <option value="{{.Id}}">{{.Name}}</option>
+                    {{end}}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Описание проблемы:</label>
+                <textarea 
+                    id="description" 
+                    name="description" 
+                    rows="5" 
+                    placeholder="Подробно опишите возникшую проблему..."
+                ></textarea>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit">Создать заявку</button>
+            </div>
+        </form>
+    </main>
 {{end}}
 </html>

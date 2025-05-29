@@ -241,3 +241,23 @@ func (r *RequestRepo) GetAllUserClosedDetail(ctx context.Context, login string) 
 
 	return requests, nil
 }
+
+func (r *RequestRepo) GetRequestTypes(ctx context.Context) (types []domain.RequestType, err error) {
+	query := `SELECT id, name FROM requestType`
+
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		t := domain.RequestType{}
+		err = rows.Scan(&t.Id, &t.Name)
+		if err != nil {
+			return nil, err
+		}
+		types = append(types, t)
+	}
+	return types, nil
+}

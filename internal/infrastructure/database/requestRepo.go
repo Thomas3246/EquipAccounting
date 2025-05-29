@@ -14,4 +14,5 @@ type RequestRepo interface {
 	GetAllClosedForUserDetail(context.Context, string) ([]domain.RequestView, error)
 	GetAllUserActiveDetail(context.Context, string) ([]domain.RequestView, error)
 	GetAllUserClosedDetail(context.Context, string) ([]domain.RequestView, error)
+	GetRequestTypes(context.Context) ([]domain.RequestType, error)
 }
