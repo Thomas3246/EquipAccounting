@@ -10,4 +10,6 @@ var (
 	ErrInvalidParameter       = errors.New("invalid parameter")
 	ErrInvalidCookieParameter = errors.New("invalid cookie parameter")
 	ErrNoAccess               = errors.New("no access to page")
+	ErrRequestNotFound        = errors.New("request not found")
+	ErrInvalidIsAdminValue    = errors.New("invalid is admin value")
 )

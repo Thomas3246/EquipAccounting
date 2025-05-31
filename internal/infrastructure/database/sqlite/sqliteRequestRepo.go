@@ -272,3 +272,37 @@ func (r *RequestRepo) AddRequest(ctx context.Context, request domain.Request) er
 	}
 	return nil
 }
+
+func (r *RequestRepo) GetRequestById(ctx context.Context, id int) (request domain.Request, err error) {
+	query := `SELECT id, requestType, description, requestAuthor, status, createdAt, COALESCE(request.closedAt, '') as closedAt, equipment 
+			  FROM request WHERE id = ?`
+
+	row := r.db.QueryRowContext(ctx, query, id)
+	if row.Err() != nil {
+		return request, err
+	}
+
+	err = row.Scan(&request.Id, &request.Type, &request.Description, &request.Author, &request.Status, &request.CreatedAt, &request.ClosedAt, &request.Equipment)
+	if err != nil {
+		return request, err
+	}
+	return request, nil
+}
+
+func (s *RequestRepo) UpdateDescription(ctx context.Context, reqId int, descr string) error {
+	query := `UPDATE request 
+			  SET description = ?
+			  WHERE id = ?`
+
+	_, err := s.db.ExecContext(ctx, query, descr, reqId)
+	return err
+}
+
+func (s *RequestRepo) UpdateRequest(ctx context.Context, request domain.Request) error {
+	query := `UPDATE request
+			  SET requestType = ?, description = ?, equipment = ?
+			  WHERE id = ?`
+
+	_, err := s.db.ExecContext(ctx, query, request.Type, request.Description, request.Equipment, request.Id)
+	return err
+}

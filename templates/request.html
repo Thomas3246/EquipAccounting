@@ -1,0 +1,149 @@
+{{define "content"}}
+<body>
+    <div class="form-container">
+
+        {{if eq .Request.Status 2}}
+            <h2>Просмотр закрытой заявки</h2>
+        {{else}}
+            <h2>Редактирование заявки</h2>
+        {{end}}
+
+        {{if eq .IsAdmin 1}}
+            <div class="top-buttons">
+                <a href="/addfile/{{.Request.Id}}" class="btn">Добавить файл</a>
+                {{if ne .Request.Status 2}}
+                    <a href="/closeRequest/{{.Request.Id}}" class="btn">Закрыть заявку</a>
+                {{end}}
+            </div>
+        {{end}}
+
+        {{if eq .Request.Status 2}}
+            <!-- Только просмотр, без формы -->
+            <div class="form-group">
+                <label>ID</label>
+                <input type="text" value="{{.Request.Id}}" readonly class="readonly">
+            </div>
+
+            <div class="form-group">
+                <label>Тип</label>
+                {{range .Types}}
+                    {{if eq $.Request.Type .Id}}
+                        <input type="text" value="{{.Name}}" readonly class="readonly">
+                    {{end}}
+                {{end}}
+            </div>
+
+            <div class="form-group">
+                <label>Описание</label>
+                <textarea readonly class="readonly">{{.Request.Description}}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Автор</label>
+                <input type="text" value="{{.Author.Login}} - {{.Author.Name}}" readonly class="readonly">
+            </div>
+
+            <div class="form-group">
+                <label>Статус</label>
+                <input type="text" value="Закрыта" readonly class="readonly">
+            </div>
+
+            <div class="form-group">
+                <label>Создана</label>
+                <input type="text" value="{{.Request.CreatedAt}}" readonly class="readonly">
+            </div>
+
+            <div class="form-group">
+                <label>Закрыта</label>
+                <input type="text" value="{{.Request.ClosedAt}}" readonly class="readonly">
+            </div>
+
+            <div class="form-group">
+                <label>Оборудование</label>
+                {{range .Equipment}}
+                    {{if eq $.Request.Equipment .Id}}
+                        <input type="text" value="{{.Directory}} / {{.Department}} / {{.InvNum}}" readonly class="readonly">
+                    {{end}}
+                {{end}}
+            </div>
+
+        {{else}}
+            <!-- Редактируемая форма -->
+            <form action="/request/{{.Request.Id}}" method="POST">
+                <div class="form-group">
+                    <label>ID</label>
+                    <input type="text" value="{{.Request.Id}}" readonly class="readonly">
+                </div>
+
+                <div class="form-group">
+                    <label>Тип</label>
+                    {{if eq .IsAdmin 1}}
+                        <select name="type">
+                            {{range .Types}}
+                                <option value="{{.Id}}" {{if eq $.Request.Type .Id}}selected{{end}}>{{.Name}}</option>
+                            {{end}}
+                        </select>
+                    {{else}}
+                        {{range .Types}}
+                            {{if eq $.Request.Type .Id}}
+                                <input type="text" value="{{.Name}}" readonly class="readonly">
+                            {{end}}
+                        {{end}}
+                    {{end}}
+                </div>
+
+                <div class="form-group">
+                    <label>Описание</label>
+                    <textarea name="description">{{.Request.Description}}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Автор</label>
+                    <input type="text" value="{{.Author.Login}} - {{.Author.Name}}" readonly class="readonly">
+                </div>
+
+                <div class="form-group">
+                    <label>Статус</label>
+                    <input type="text" value="Открыта" readonly class="readonly">
+                </div>
+
+                <div class="form-group">
+                    <label>Создана</label>
+                    <input type="text" value="{{.Request.CreatedAt}}" readonly class="readonly">
+                </div>
+
+
+                {{if eq .Request.Status 2}}
+                    <div class="form-group">
+                        <label>Закрыта</label>
+                        {{if eq .IsAdmin 1}}
+                            <input type="text" name="closed" value="{{.Request.ClosedAt}}">
+                        {{else}}
+                            <input type="text" value="{{.Request.ClosedAt}}" readonly class="readonly">
+                        {{end}}
+                    </div>
+                {{end}}
+
+                <div class="form-group">
+                    <label>Оборудование</label>
+                    {{if eq .IsAdmin 1}}
+                        <select name="equipment">
+                            {{range .Equipment}}
+                                <option value="{{.Id}}" {{if eq $.Request.Equipment .Id}}selected{{end}}>{{.Directory}} / {{.Department}} / {{.InvNum}}</option>
+                            {{end}}
+                        </select>
+                    {{else}}
+                        {{range .Equipment}}
+                            {{if eq $.Request.Equipment .Id}}
+                                <input type="text" value="{{.Directory}} / {{.Department}} / {{.InvNum}}" readonly class="readonly">
+                            {{end}}
+                        {{end}}
+                    {{end}}
+                </div>
+
+                <button type="submit" class="btn">Сохранить</button>
+            </form>
+        {{end}}
+    </div>
+</body>
+{{end}}

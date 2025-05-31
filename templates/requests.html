@@ -22,7 +22,7 @@
 
         {{if .Requests}}
             {{range .Requests}}
-            <div class="request-item">
+            <a href="/request/{{.Id}}" class="request-item">
                 <div class="request-field"><strong>ID:</strong> {{.Id}}</div>
                 <div class="request-field"><strong>Тип:</strong> {{.Type}}</div>
                 <div class="request-field"><strong>Описание:</strong> {{.Description}}</div>
@@ -31,8 +31,7 @@
                 <div class="request-field"><strong>Создана:</strong> {{.CreatedAt}}</div>
                 <div class="request-field"><strong>Закрыта:</strong> {{.ClosedAt}}</div>
                 <div class="request-field"><strong>Оборудование:</strong> {{.Equipment}}</div>
-            </div>
-            <hr>
+            </a>
             {{end}}
         {{else}}
             <div class="no-requests">

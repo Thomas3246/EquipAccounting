@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"strconv"
 	"strings"
 	"time"
@@ -155,4 +156,33 @@ func (s *RequestService) NewRequest(rType int, descr string, author int, equipme
 		return err
 	}
 	return nil
+}
+
+func (s *RequestService) GetRequestById(id int) (domain.Request, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	request, err := s.repo.GetRequestById(ctx, id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return request, ErrRequestNotFound
+		}
+		return request, err
+	}
+
+	return request, nil
+}
+
+func (s *RequestService) EditDescription(reqId int, descr string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	return s.repo.UpdateDescription(ctx, reqId, descr)
+}
+
+func (s *RequestService) EditRequest(request domain.Request) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	return s.repo.UpdateRequest(ctx, request)
 }

@@ -35,6 +35,9 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 		r.Get("/newRequest", h.RequestHandler.NewRequestGet)
 		r.Post("/newRequest", h.RequestHandler.NewRequestPost)
 
+		r.Get("/request/{id}", h.RequestHandler.RequestEditGet)
+		r.Post("/request/{id}", h.RequestHandler.RequestEditPost)
+
 		// admin only
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.AdminMiddleWare)

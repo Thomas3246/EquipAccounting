@@ -239,7 +239,7 @@ func (h *RequestHandler) NewRequestGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	equipment, err := h.eqService.GetAvailableEquipment(parts[0])
+	equipment, err := h.eqService.GetAvailableEquipment(cookie.Value)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		log.Println("Ошибка при получении доступного оборудования: ", err)
@@ -311,6 +311,155 @@ func (h *RequestHandler) NewRequestPost(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		log.Println("Ошибка при добавлении заявки: ", err)
 		return
+	}
+
+	http.Redirect(w, r, "/allactive", http.StatusSeeOther)
+}
+
+func (h *RequestHandler) RequestEditGet(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles(templateloader.GetTemplatePath("base.html"), templateloader.GetTemplatePath("request.html"))
+	if err != nil {
+		http.Error(w, "Server Error", http.StatusInternalServerError)
+		log.Println("Template Parse Error: ", err)
+		return
+	}
+
+	cookie, err := r.Cookie("auth")
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при извлечении cookie: ", err)
+		return
+	}
+
+	parts := strings.Split(cookie.Value, "|")
+	if len(parts) != 2 {
+		http.Error(w, "Invalid Cookie Value", http.StatusInternalServerError)
+		return
+	}
+
+	requestId, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "Invalid Request", http.StatusBadRequest)
+		return
+	}
+
+	request, err := h.reqService.GetRequestById(requestId)
+	if err != nil {
+		if err == service.ErrRequestNotFound {
+			http.Error(w, "Request Not Found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при получении запроса: ", err)
+		return
+	}
+
+	isAdmin, err := strconv.Atoi(parts[1])
+	if err != nil {
+		http.Error(w, "Invalid Cookie Value", http.StatusInternalServerError)
+		log.Println("Ошибка чтения значения isAdmin в cookie: ", err)
+		return
+	}
+
+	equipment, err := h.eqService.GetAvailableEquipment(cookie.Value)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при получении оборудования: ", err)
+		return
+	}
+
+	requestTypes, err := h.reqService.GetRequestTypes()
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при получении типов заявок: ", err)
+		return
+	}
+
+	user, err := h.userService.GetUserByLogin(parts[0])
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при получении автора заявки: ", err)
+		return
+	}
+
+	templData := struct {
+		Request   domain.Request
+		IsAdmin   int
+		Equipment []domain.EquipmentView
+		Types     []domain.RequestType
+		Author    domain.User
+	}{
+		Request:   request,
+		IsAdmin:   isAdmin,
+		Equipment: equipment,
+		Types:     requestTypes,
+		Author:    *user,
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	err = tmpl.Execute(w, templData)
+	if err != nil {
+		http.Error(w, "Server Error", http.StatusInternalServerError)
+		log.Println("Template Execute Error: ", err)
+	}
+}
+
+func (h *RequestHandler) RequestEditPost(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	cookie, err := r.Cookie("auth")
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при извлечении cookie: ", err)
+		return
+	}
+
+	parts := strings.Split(cookie.Value, "|")
+	if len(parts) != 2 {
+		http.Error(w, "Invalid Cookie Value", http.StatusInternalServerError)
+		return
+	}
+
+	requestId, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "Invalid Request", http.StatusBadRequest)
+		return
+	}
+
+	if parts[1] == "0" {
+		descr := r.Form.Get("description")
+		err := h.reqService.EditDescription(requestId, descr)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			log.Println("Ошибка изменения описания заявки: ", err)
+			return
+		}
+	}
+
+	if parts[1] == "1" {
+		rTypeStr := r.Form.Get("type")
+		rType, _ := strconv.Atoi(rTypeStr)
+		descr := r.Form.Get("description")
+		equipStr := r.Form.Get("equipment")
+		equip, _ := strconv.Atoi(equipStr)
+
+		request := domain.Request{
+			Id:          requestId,
+			Type:        rType,
+			Description: descr,
+			Equipment:   equip,
+		}
+
+		err := h.reqService.EditRequest(request)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			log.Println("Ошибка при редактировании заявки: ", err)
+			return
+		}
 	}
 
 	http.Redirect(w, r, "/allactive", http.StatusSeeOther)

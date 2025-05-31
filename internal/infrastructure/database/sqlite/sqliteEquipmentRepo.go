@@ -15,6 +15,31 @@ func NewEquipmentRepo(db *sql.DB) *EquipmentRepo {
 	return &EquipmentRepo{db: db}
 }
 
+func (r *EquipmentRepo) GetActiveEquipment(ctx context.Context) (equipmentList []domain.EquipmentView, err error) {
+	query := `SELECT e.id, e.invNum, ed.name
+			 FROM equipment as e
+			 INNER JOIN equipDirectory as ed ON e.directory = ed.id
+			 WHERE e.status = 1`
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		eq := domain.EquipmentView{}
+		err = rows.Scan(&eq.Id, &eq.InvNum, &eq.Directory)
+		if err != nil {
+			return nil, err
+		}
+		equipmentList = append(equipmentList, eq)
+	}
+	return equipmentList, nil
+}
+
 func (r *EquipmentRepo) GetActiveEquipmentForUserLogin(ctx context.Context, login string) (equipmentList []domain.EquipmentView, err error) {
 	quey := `SELECT e.id, e.invNum, ed.name
 			 FROM equipment as e

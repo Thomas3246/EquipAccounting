@@ -8,4 +8,5 @@ import (
 
 type EquipmentRepo interface {
 	GetActiveEquipmentForUserLogin(context.Context, string) ([]domain.EquipmentView, error)
+	GetActiveEquipment(context.Context) ([]domain.EquipmentView, error)
 }
