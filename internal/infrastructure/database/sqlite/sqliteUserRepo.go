@@ -42,3 +42,67 @@ func (r *UserRepo) GetByLogin(ctx context.Context, login string) (*domain.User, 
 
 	return user, nil
 }
+
+func (r *UserRepo) GetUsersView(ctx context.Context) (users []domain.ViewUser, err error) {
+	query := `SELECT u.id, u.login, u.name, dep.name || " " || div.name
+			  FROM users AS u
+			  INNER JOIN department AS dep ON u.department = dep.id
+			  INNER JOIN departmentDivisions AS div ON dep.division = div.id
+			  WHERE u.isAdmin = 0`
+
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		u := domain.ViewUser{}
+		err := rows.Scan(&u.Id, &u.Login, &u.Name, &u.Department)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, u)
+	}
+	return users, nil
+}
+
+func (r *UserRepo) Delete(ctx context.Context, id int) error {
+	query := "DELETE FROM users WHERE id = ?"
+
+	_, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *UserRepo) GetById(ctx context.Context, id int) (domain.User, error) {
+	query := "SELECT * FROM users WHERE id = ?"
+
+	row := r.db.QueryRowContext(ctx, query, id)
+	if row.Err() != nil {
+		return domain.User{}, row.Err()
+	}
+
+	u := domain.User{}
+
+	err := row.Scan(&u.Id, &u.Login, &u.Password, &u.Name, &u.IsAdmin, &u.DepartmentId)
+	if err != nil {
+		return domain.User{}, err
+	}
+
+	return u, nil
+}
+
+func (r *UserRepo) New(ctx context.Context, user *domain.User) error {
+	query := "INSERT INTO users(login, password, name, isAdmin, department) VALUES (?,?,?,0,?)"
+	_, err := r.db.ExecContext(ctx, query, user.Login, user.Password, user.Name, user.DepartmentId)
+	if err != nil {
+		return err
+	}
+	return nil
+}

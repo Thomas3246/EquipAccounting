@@ -11,7 +11,7 @@ type AppHandler struct {
 
 func NewAppHandler(service *service.ApplicationService) *AppHandler {
 	return &AppHandler{
-		UserHandler:    NewUserHandler(service.UserService),
+		UserHandler:    NewUserHandler(service.UserService, service.DepartmentService),
 		RequestHandler: NewRequestHandler(service.RequestService, service.UserService, service.EquipmentService),
 	}
 }

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru">
+{{define "content"}}
+
+<body>
+    <div class="form-container">
+        <h2>Пользователи</h2>
+
+        <div class="top-buttons">
+            <a href="/users/new" class="btn">Добавить пользователя</a>
+        </div>
+
+        {{if .Users}}
+            {{range .Users}}
+                <div class="user-item-container">
+                    <a href="/users/{{.Id}}" class="user-block">
+                        <div><strong>Логин:</strong> {{.Login}}</div>
+                        <div><strong>Имя:</strong> {{.Name}}</div>
+                        <div><strong>Отдел:</strong> {{.Department}}</div>
+                    </a>
+
+                    <form action="/users/{{.Id}}/delete" method="POST" class="delete-form" onsubmit="return confirm('Удалить пользователя {{.Login}}?');">
+                        <button type="submit" class="btn btn-danger">Удалить</button>
+                    </form>
+                </div>
+            {{end}}
+        {{else}}
+            <p>Пользователей для администрирования пока нет.</p>
+        {{end}}
+    </div>
+</body>
+
+{{end}}
+</html>

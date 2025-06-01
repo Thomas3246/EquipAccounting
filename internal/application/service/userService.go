@@ -88,3 +88,52 @@ func (s *UserService) GetUserByLogin(login string) (*domain.User, error) {
 	}
 	return user, nil
 }
+
+func (s *UserService) GetUsers() ([]domain.ViewUser, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	users, err := s.repo.GetUsersView(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
+func (s *UserService) DeleteUser(id int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	user, err := s.repo.GetById(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if user.IsAdmin == 1 {
+		return ErrNoAccess
+	}
+
+	err = s.repo.Delete(ctx, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *UserService) AddUser(user domain.User) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	hashed, err := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
+	if err != nil {
+		return err
+	}
+
+	user.Password = string(hashed)
+
+	err = s.repo.New(ctx, &user)
+	if err != nil {
+		return err
+	}
+	return nil
+}

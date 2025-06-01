@@ -10,7 +10,6 @@ import (
 
 func SetAuthCookie(w http.ResponseWriter, login string, isAdmin int) {
 	value := fmt.Sprintf("%s|%d", login, isAdmin)
-	fmt.Print(value)
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "auth",

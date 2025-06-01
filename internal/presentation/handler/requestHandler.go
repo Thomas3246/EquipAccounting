@@ -13,12 +13,6 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type TemplateData struct {
-	Requests  []domain.RequestView
-	UserLogin string
-	Flag      string
-}
-
 type RequestHandler struct {
 	reqService  service.RequestService
 	userService service.UserService
@@ -61,10 +55,23 @@ func (h *RequestHandler) AllActiveRequests(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	templData := TemplateData{
+	isAdmin, err := strconv.Atoi(parts[1])
+	if err != nil {
+		http.Error(w, "Invalid Cookie Value", http.StatusInternalServerError)
+		log.Println("Ошибка чтения значения isAdmin в cookie: ", err)
+		return
+	}
+
+	templData := struct {
+		Requests  []domain.RequestView
+		UserLogin string
+		Flag      string
+		IsAdmin   int
+	}{
 		Requests:  requests,
 		UserLogin: parts[0],
 		Flag:      "allactive",
+		IsAdmin:   isAdmin,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -108,10 +115,24 @@ func (h *RequestHandler) AllActiveUserRequests(w http.ResponseWriter, r *http.Re
 		http.Error(w, "Invalid Cookie Value", http.StatusInternalServerError)
 		return
 	}
-	templData := TemplateData{
+
+	isAdmin, err := strconv.Atoi(parts[1])
+	if err != nil {
+		http.Error(w, "Invalid Cookie Value", http.StatusInternalServerError)
+		log.Println("Ошибка чтения значения isAdmin в cookie: ", err)
+		return
+	}
+
+	templData := struct {
+		Requests  []domain.RequestView
+		UserLogin string
+		Flag      string
+		IsAdmin   int
+	}{
 		Requests:  requests,
 		UserLogin: parts[0],
 		Flag:      "alluseractive",
+		IsAdmin:   isAdmin,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -143,6 +164,13 @@ func (h *RequestHandler) AllClosedRequests(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	isAdmin, err := strconv.Atoi(parts[1])
+	if err != nil {
+		http.Error(w, "Invalid Cookie Value", http.StatusInternalServerError)
+		log.Println("Ошибка чтения значения isAdmin в cookie: ", err)
+		return
+	}
+
 	requests, err := h.reqService.GetAllClosed(cookie.Value)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -150,10 +178,16 @@ func (h *RequestHandler) AllClosedRequests(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	templData := TemplateData{
+	templData := struct {
+		Requests  []domain.RequestView
+		UserLogin string
+		Flag      string
+		IsAdmin   int
+	}{
 		Requests:  requests,
 		UserLogin: parts[0],
 		Flag:      "allclosed",
+		IsAdmin:   isAdmin,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -197,10 +231,24 @@ func (h *RequestHandler) AllClosedUserRequests(w http.ResponseWriter, r *http.Re
 		http.Error(w, "Invalid Cookie Value", http.StatusInternalServerError)
 		return
 	}
-	templData := TemplateData{
+
+	isAdmin, err := strconv.Atoi(parts[1])
+	if err != nil {
+		http.Error(w, "Invalid Cookie Value", http.StatusInternalServerError)
+		log.Println("Ошибка чтения значения isAdmin в cookie: ", err)
+		return
+	}
+
+	templData := struct {
+		Requests  []domain.RequestView
+		UserLogin string
+		Flag      string
+		IsAdmin   int
+	}{
 		Requests:  requests,
 		UserLogin: parts[0],
 		Flag:      "alluserclosed",
+		IsAdmin:   isAdmin,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -232,6 +280,13 @@ func (h *RequestHandler) NewRequestGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	isAdmin, err := strconv.Atoi(parts[1])
+	if err != nil {
+		http.Error(w, "Invalid Cookie Value", http.StatusInternalServerError)
+		log.Println("Ошибка чтения значения isAdmin в cookie: ", err)
+		return
+	}
+
 	requestTypes, err := h.reqService.GetRequestTypes()
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -250,10 +305,12 @@ func (h *RequestHandler) NewRequestGet(w http.ResponseWriter, r *http.Request) {
 		UserLogin    string
 		RequestTypes []domain.RequestType
 		Equipment    []domain.EquipmentView
+		IsAdmin      int
 	}{
 		UserLogin:    parts[0],
 		RequestTypes: requestTypes,
 		Equipment:    equipment,
+		IsAdmin:      isAdmin,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")

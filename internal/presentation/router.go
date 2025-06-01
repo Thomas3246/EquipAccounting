@@ -18,6 +18,7 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 	r.Group(func(r chi.Router) {
 		r.Get("/login", h.UserHandler.LoginGet)
 		r.Post("/login", h.UserHandler.LoginPost)
+
 		r.Get("/logout", h.UserHandler.Logout)
 
 	})
@@ -41,7 +42,17 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 		// admin only
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.AdminMiddleWare)
-			r.Get("/register", h.UserHandler.Register)
+
+			r.Get("/users", h.UserHandler.Users)
+
+			r.Get("/users/new", h.UserHandler.AddUserGet)
+			r.Post("/users/new", h.UserHandler.AddUserPost)
+
+			// r.Get("/users/{id}", h.UserHandler.UserGet)
+			// r.Post("/users/{id}", h.UserHandler.UserPost)
+
+			r.Post("/users/{id}/delete", h.UserHandler.DeleteUser)
+
 		})
 
 	})

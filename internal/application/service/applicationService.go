@@ -7,9 +7,10 @@ import (
 )
 
 type ApplicationService struct {
-	UserService      *UserService
-	RequestService   *RequestService
-	EquipmentService *EquipmentService
+	UserService       *UserService
+	RequestService    *RequestService
+	EquipmentService  *EquipmentService
+	DepartmentService *DepartmentService
 }
 
 func NewAppService(db *sql.DB) *ApplicationService {
@@ -23,9 +24,13 @@ func NewAppService(db *sql.DB) *ApplicationService {
 	equipmentRepo := sqlite.NewEquipmentRepo(db)
 	equipmentService := NewEquipmentService(equipmentRepo)
 
+	departmentRepo := sqlite.NewDepartmentRepo(db)
+	departmentService := NewDepartmentService(departmentRepo)
+
 	return &ApplicationService{
-		UserService:      userService,
-		RequestService:   requestService,
-		EquipmentService: equipmentService,
+		UserService:       userService,
+		RequestService:    requestService,
+		EquipmentService:  equipmentService,
+		DepartmentService: departmentService,
 	}
 }
