@@ -284,3 +284,110 @@ func (h *UserHandler) AddUserPost(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/users", http.StatusSeeOther)
 }
+
+func (h *UserHandler) UserGet(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles(templateloader.GetTemplatePath("base.html"), templateloader.GetTemplatePath("user.html"))
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		log.Println("Error by parse", err)
+		return
+	}
+
+	cookie, err := r.Cookie("auth")
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при извлечении cookie: ", err)
+		return
+	}
+	parts := strings.Split(cookie.Value, "|")
+	if len(parts) != 2 {
+		http.Error(w, "Invalid Cookie Value", http.StatusInternalServerError)
+		return
+	}
+	isAdmin, err := strconv.Atoi(parts[1])
+	if err != nil {
+		http.Error(w, "Invalid Cookie Value", http.StatusInternalServerError)
+		log.Println("Ошибка чтения значения isAdmin в cookie: ", err)
+		return
+	}
+
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+	user, err := h.userService.GetUserById(id)
+	if err != nil {
+		if err == service.ErrUserNotFound {
+			http.Error(w, "User Not Found", http.StatusNotFound)
+			log.Println(err)
+			return
+		}
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка получения пользователя: ", err)
+		return
+	}
+
+	departments, err := h.departmentService.GetDepartmentsView()
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка получения отделов: ", err)
+		return
+	}
+
+	templData := struct {
+		User        domain.User
+		IsAdmin     int
+		Departments []domain.DepartmentView
+	}{
+		User:        user,
+		IsAdmin:     isAdmin,
+		Departments: departments,
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	err = tmpl.Execute(w, templData)
+	if err != nil {
+		http.Error(w, "Server Error", http.StatusInternalServerError)
+		log.Println("Template Execute Error: ", err)
+	}
+}
+
+func (h *UserHandler) UserPost(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	login := r.Form.Get("login")
+	name := r.Form.Get("name")
+	password := r.Form.Get("password")
+	departmentIdStr := r.Form.Get("department_id")
+	departmentId, _ := strconv.Atoi(departmentIdStr)
+
+	user := domain.User{
+		Id:           id,
+		Login:        login,
+		Name:         name,
+		Password:     password,
+		DepartmentId: departmentId,
+	}
+
+	err = h.userService.EditUser(user)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при редактировании пользователя: ", err)
+		return
+	}
+
+	http.Redirect(w, r, "/users", http.StatusSeeOther)
+}

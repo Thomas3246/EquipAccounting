@@ -48,8 +48,8 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 			r.Get("/users/new", h.UserHandler.AddUserGet)
 			r.Post("/users/new", h.UserHandler.AddUserPost)
 
-			// r.Get("/users/{id}", h.UserHandler.UserGet)
-			// r.Post("/users/{id}", h.UserHandler.UserPost)
+			r.Get("/users/{id}", h.UserHandler.UserGet)
+			r.Post("/users/{id}", h.UserHandler.UserPost)
 
 			r.Post("/users/{id}/delete", h.UserHandler.DeleteUser)
 

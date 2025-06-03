@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"strconv"
 	"time"
 
@@ -136,4 +137,42 @@ func (s *UserService) AddUser(user domain.User) error {
 		return err
 	}
 	return nil
+}
+
+func (s *UserService) GetUserById(id int) (domain.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	user, err := s.repo.GetById(ctx, id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return domain.User{}, ErrUserNotFound
+		}
+		return domain.User{}, err
+	}
+	return user, nil
+}
+
+func (s *UserService) EditUser(user domain.User) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := s.repo.UpdateUserData(ctx, user)
+	if err != nil {
+		return err
+	}
+
+	if user.Password != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
+		if err != nil {
+			return err
+		}
+		err = s.repo.ChangeUserPassword(ctx, user.Id, string(hashedPassword))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+
 }

@@ -106,3 +106,27 @@ func (r *UserRepo) New(ctx context.Context, user *domain.User) error {
 	}
 	return nil
 }
+
+func (r *UserRepo) UpdateUserData(ctx context.Context, user domain.User) error {
+	query := `UPDATE users 
+			  SET login = ?, name = ?, department = ?
+			  WHERE id = ?`
+
+	_, err := r.db.ExecContext(ctx, query, user.Login, user.Name, user.DepartmentId, user.Id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *UserRepo) ChangeUserPassword(ctx context.Context, id int, password string) error {
+	query := `UPDATE users
+			  SET password = ?
+			  WHERE id = ?`
+
+	_, err := r.db.ExecContext(ctx, query, password, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}

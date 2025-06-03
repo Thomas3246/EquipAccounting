@@ -13,4 +13,6 @@ type UserRepo interface {
 	Delete(context.Context, int) error
 	GetById(context.Context, int) (domain.User, error)
 	New(context.Context, *domain.User) error
+	ChangeUserPassword(context.Context, int, string) error
+	UpdateUserData(context.Context, domain.User) error
 }
