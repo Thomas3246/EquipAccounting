@@ -50,3 +50,26 @@ func (s *EquipmentService) GetAvailableEquipment(cookieValue string) ([]domain.E
 
 	return nil, ErrInvalidIsAdminValue
 }
+
+func (s *EquipmentService) GetEquipmentStates() ([]domain.EquipmentState, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	states, err := s.repo.GetEquipmentStates(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return states, nil
+}
+
+func (s *EquipmentService) GetEquipmentViewByFilter(department, state int) ([]domain.EquipmentView, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	equipment, err := s.repo.GetEquipmentViewByFilter(ctx, department, state)
+	if err != nil {
+		return nil, err
+	}
+
+	return equipment, nil
+}

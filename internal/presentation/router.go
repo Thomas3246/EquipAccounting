@@ -41,7 +41,10 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 
 		// admin only
 		r.Group(func(r chi.Router) {
+
 			r.Use(middleware.AdminMiddleWare)
+
+			// User handlers
 
 			r.Get("/users", h.UserHandler.Users)
 
@@ -52,6 +55,10 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 			r.Post("/users/{id}", h.UserHandler.UserPost)
 
 			r.Post("/users/{id}/delete", h.UserHandler.DeleteUser)
+
+			// Equipment handlers
+
+			r.Get("/equipment", h.EquipmantHandler.EquipmentList)
 
 		})
 

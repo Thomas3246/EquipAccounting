@@ -21,3 +21,8 @@ type EquipmentView struct {
 	Department string
 	Status     string
 }
+
+type EquipmentState struct {
+	Id   int
+	Name string
+}

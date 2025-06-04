@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/Thomas3246/EquipAccounting/internal/domain"
 )
@@ -65,4 +66,73 @@ func (r *EquipmentRepo) GetActiveEquipmentForUserLogin(ctx context.Context, logi
 		equipmentList = append(equipmentList, eq)
 	}
 	return equipmentList, nil
+}
+
+func (r *EquipmentRepo) GetEquipmentStates(ctx context.Context) (states []domain.EquipmentState, err error) {
+	query := `SELECT id, name FROM equipStatus`
+
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		state := domain.EquipmentState{}
+		err = rows.Scan(&state.Id, &state.Name)
+		if err != nil {
+			return nil, err
+		}
+		states = append(states, state)
+	}
+	return states, nil
+}
+
+func (r *EquipmentRepo) GetEquipmentViewByFilter(ctx context.Context, department, state int) (equipment []domain.EquipmentView, err error) {
+	query := `SELECT e.id, e.invNum, e.purchDate, e.regDate, 
+			  	  COALESCE(e.decomDate, '') AS decomDate, dir.name || " " ||  COALESCE(dir.releaseYear, ''), dep.name || depdiv.name, es.Name
+			  FROM equipment AS e
+			  INNER JOIN equipDirectory AS dir ON e.directory = dir.id
+			  INNER JOIN department AS dep ON e.department = dep.id
+			  INNER JOIN departmentDivisions AS depdiv ON dep.division = depdiv.id
+			  INNER JOIN equipStatus AS es ON e.status = es.id
+			  WHERE 1=1`
+
+	args := []any{}
+
+	argPos := 1
+	if department > 0 {
+		query += fmt.Sprintf(" AND e.department = $%d", argPos)
+		args = append(args, department)
+		argPos++
+	}
+
+	if state > 0 {
+		query += fmt.Sprintf(" AND e.status = $%d", argPos)
+		args = append(args, state)
+		argPos++
+	}
+
+	rows, err := r.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		e := domain.EquipmentView{}
+		err = rows.Scan(&e.Id, &e.InvNum, &e.PurchDate, &e.RegDate, &e.DecomDate, &e.Directory, &e.Department, &e.Status)
+		if err != nil {
+			return nil, err
+		}
+		equipment = append(equipment, e)
+	}
+
+	return equipment, nil
 }

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+{{define "content"}}
+
+<body>
+    <div class="form-container">
+        <h2>Оборудование</h2>
+
+        <div class="top-buttons">
+            <a href="/equipment/new" class="btn">Добавить оборудование</a>
+        </div>
+
+        <form method="GET" action="/equipment" class="filter-form">
+            <select name="department">
+                <option value="">Все отделы</option>
+                {{range .Departments}}
+                    <option value="{{.Id}}" {{if eq .Id $.CurrentDepartment}}selected{{end}}>
+                        {{.Name}} ({{.DivisionName}})
+                    </option>
+                {{end}}
+            </select>
+
+            <select name="state">
+                <option value="">Все состояния</option>
+                {{range .States}}
+                    <option value="{{.Id}}" {{if eq .Id $.CurrentState}}selected{{end}}>
+                        {{.Name}}
+                    </option>
+                {{end}}
+            </select>
+
+            <button type="submit" class="btn">Применить фильтры</button>
+            <a href="/equipment" class="btn">Сбросить</a>
+        </form>
+
+        {{if .Equipment}}
+            {{range .Equipment}}
+                <div class="equipment-item-container">
+                    <a href="/equipment/{{.Id}}" class="equipment-block">
+                        <div><strong>Инв. номер:</strong> {{.InvNum}}</div>
+                        <div><strong>Наименование:</strong> {{.Directory}}</div>
+                        <div><strong>Отдел:</strong> {{.Department}}</div>
+                        <div><strong>Состояние:</strong> {{.Status}}</div>
+                        <div><strong>Дата регистрации:</strong> {{.RegDate}}</div>
+                    </a>
+
+                </div>
+            {{end}}
+        {{else}}
+            <p class="no-items">Оборудование не найдено. Попробуйте изменить параметры фильтрации.</p>
+        {{end}}
+    </div>
+</body>
+
+{{end}}
+</html>
