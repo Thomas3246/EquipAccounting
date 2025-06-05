@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+{{define "content"}}
+
+<body>
+    <div class="form-container">
+        <h2>Справочник оборудования</h2>
+
+        <div class="top-buttons">
+            <a href="/equipmentDirectory/new" class="btn">Добавить модель</a>
+        </div>
+
+        <form method="GET" action="/equipmentDirectory" class="filter-form">
+            <select name="type">
+                <option value="">Все типы</option>
+                {{range .EquipmentTypes}}
+                    <option value="{{.Id}}" {{if eq .Id $.CurrentType}}selected{{end}}>
+                        {{.Name}}
+                    </option>
+                {{end}}
+            </select>
+
+            <button type="submit" class="btn">Применить фильтр</button>
+            <a href="/equipmentDirectory" class="btn">Сбросить</a>
+        </form>
+
+        {{if .EquipmentDirectories}}
+            {{range .EquipmentDirectories}}
+                <div class="equipment-item-container">
+                    <a href="/equipmentDirectory/{{.Id}}" class="equipment-block">
+                        <div><strong>Наименование:</strong> {{.Name}}</div>
+                        <div><strong>Тип:</strong> {{.Type}}</div>
+                        <div><strong>Год выпуска:</strong> {{.ReleaseYear}}</div>
+                    </a>
+
+                    <form action="/equipmentDirectory/{{.Id}}/delete" method="POST" class="delete-form" 
+                          onsubmit="return confirm('Удалить модель оборудования {{.Name}}?');">
+                        <button type="submit" class="btn btn-danger">Удалить</button>
+                    </form>
+                </div>
+            {{end}}
+        {{else}}
+            <p class="no-items">Справочник оборудования пуст или ничего не найдено по выбранному фильтру</p>
+        {{end}}
+    </div>
+</body>
+
+{{end}}
+</html>
