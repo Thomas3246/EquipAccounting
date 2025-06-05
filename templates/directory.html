@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+{{define "content"}}
+
+<body>
+    <div class="form-container">
+        <h2>Редактирование модели оборудования</h2>
+
+        <form method="POST" action="/equipmentDirectory/{{.Directory.Id}}">
+            <div class="form-group">
+                <label for="name">Наименование:</label>
+                <input type="text" id="name" name="name" value="{{.Directory.Name}}" required class="form-input">
+            </div>
+
+            <div class="form-group">
+                <label for="releaseYear">Год выпуска:</label>
+                <input type="text" id="releaseYear" name="releaseYear" value="{{.Directory.ReleaseYear}}" class="form-input">
+            </div>
+
+            <div class="form-group">
+                <label for="typeId">Тип оборудования:</label>
+                <select id="typeId" name="typeId" required class="form-input">
+                    {{range .Types}}
+                        <option value="{{.Id}}" {{if eq .Id $.Directory.TypeId}}selected{{end}}>{{.Name}}</option>
+                    {{end}}
+                </select>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+                <a href="/equipmentDirectory" class="btn btn-secondary">Отмена</a>
+                <button type="button" class="btn btn-danger" 
+                        onclick="if(confirm('Удалить эту модель оборудования?')) { 
+                            document.getElementById('delete-form').submit() 
+                        }">
+                    Удалить
+                </button>
+            </div>
+        </form>
+
+        <form id="delete-form" method="POST" action="/equipmentDirectory/{{.Directory.Id}}/delete" style="display: none;"></form>
+    </div>
+</body>
+
+{{end}}
+</html>

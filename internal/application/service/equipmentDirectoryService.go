@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/Thomas3246/EquipAccounting/internal/domain"
@@ -38,4 +39,51 @@ func (s *EquipmentDirectoryService) GetEquipmentDirectoriesViewByFilter(eType in
 	}
 
 	return directories, nil
+}
+
+func (s *EquipmentDirectoryService) GetEquipmentDirectory(id int) (domain.EquipmentDirectory, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	directory, err := s.repo.GetDirectory(ctx, id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return domain.EquipmentDirectory{}, ErrRequestNotFound
+		}
+		return domain.EquipmentDirectory{}, err
+	}
+	return directory, nil
+}
+
+func (s *EquipmentDirectoryService) UpdateDirectory(directory domain.EquipmentDirectory) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := s.repo.UpdateDirectory(ctx, directory)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *EquipmentDirectoryService) NewDirectory(directory domain.EquipmentDirectory) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := s.repo.NewDirectory(ctx, directory)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *EquipmentDirectoryService) DeleteDirectory(id int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := s.repo.DeleteDirectory(ctx, id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
