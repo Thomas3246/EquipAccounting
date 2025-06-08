@@ -136,3 +136,59 @@ func (r *EquipmentRepo) GetEquipmentViewByFilter(ctx context.Context, department
 
 	return equipment, nil
 }
+
+func (r *EquipmentRepo) GetEquipmentById(ctx context.Context, id int) (eq domain.Equipment, err error) {
+	query := `SELECT id, invNum, purchDate, regDate, COALESCE(decomDate, '') AS  decomDate, directory, department, status
+			  FROM equipment
+			  WHERE id = ?`
+
+	row := r.db.QueryRowContext(ctx, query, id)
+	if row.Err() != nil {
+		return domain.Equipment{}, err
+	}
+
+	err = row.Scan(&eq.Id, &eq.InvNum, &eq.PurchDate, &eq.RegDate, &eq.DecomDate, &eq.DirectoryId, &eq.DepartmentId, &eq.StatusId)
+	if err != nil {
+		return domain.Equipment{}, err
+	}
+	return eq, nil
+}
+
+func (r *EquipmentRepo) GetEquipmentByInvNum(ctx context.Context, invNum string) (eq domain.Equipment, err error) {
+	query := `SELECT id, invNum, purchDate, regDate, COALESCE(decomDate, '') AS  decomDate, directory, department, status
+			  FROM equipment
+			  WHERE invNum = ?`
+
+	row := r.db.QueryRowContext(ctx, query, invNum)
+	if row.Err() != nil {
+		return domain.Equipment{}, err
+	}
+
+	err = row.Scan(&eq.Id, &eq.InvNum, &eq.PurchDate, &eq.RegDate, &eq.DecomDate, &eq.DirectoryId, &eq.DepartmentId, &eq.StatusId)
+	if err != nil {
+		return domain.Equipment{}, err
+	}
+	return eq, nil
+}
+
+func (r *EquipmentRepo) UpdateEquipment(ctx context.Context, equipment domain.Equipment) error {
+	query := `UPDATE equipment
+			  SET invNum = ?, directory = ?, department = ?
+			  WHERE id = ?`
+
+	_, err := r.db.ExecContext(ctx, query, equipment.InvNum, equipment.DirectoryId, equipment.DepartmentId, equipment.Id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *EquipmentRepo) DeleteEquipment(ctx context.Context, id int) error {
+	query := `DELETE FROM equipment WHERE id = ?`
+
+	_, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}

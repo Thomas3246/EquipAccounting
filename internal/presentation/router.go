@@ -1,8 +1,11 @@
 package presentation
 
 import (
+	"net/http"
+
 	"github.com/Thomas3246/EquipAccounting/internal/presentation/handler"
 	"github.com/Thomas3246/EquipAccounting/internal/presentation/middleware"
+	"github.com/Thomas3246/EquipAccounting/pkg/path"
 	"github.com/go-chi/chi/v5"
 	basicMW "github.com/go-chi/chi/v5/middleware"
 )
@@ -13,6 +16,9 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 	// global mw
 	r.Use(middleware.LoggingMiddleware)
 	r.Use(basicMW.Recoverer)
+
+	fs := http.FileServer(http.Dir(path.GetStaticPath()))
+	r.Mount("/static", http.StripPrefix("/static", fs))
 
 	// non auth
 	r.Group(func(r chi.Router) {
@@ -59,6 +65,11 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 			// Equipment handlers
 
 			r.Get("/equipment", h.EquipmantHandler.EquipmentList)
+
+			r.Get("/equipment/{id}", h.EquipmantHandler.EquipmentGet)
+			r.Post("/equipment/{id}", h.EquipmantHandler.EquipmentPost)
+
+			r.Post("/equipment/{id}/delete", h.EquipmantHandler.DeleteEquipment)
 
 			// Equipment Directory handlers
 

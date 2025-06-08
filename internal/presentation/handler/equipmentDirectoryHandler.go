@@ -86,7 +86,7 @@ func (h *EquipmentDirectoryHandler) DirectoryGet(w http.ResponseWriter, r *http.
 
 	directory, err := h.EquipmentDirectoryService.GetEquipmentDirectory(id)
 	if err != nil {
-		if err == service.ErrRequestNotFound {
+		if err == service.ErrNotFound {
 			http.Error(w, "Not Found", http.StatusNotFound)
 			return
 		}

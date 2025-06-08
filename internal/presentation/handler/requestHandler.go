@@ -402,7 +402,7 @@ func (h *RequestHandler) RequestEditGet(w http.ResponseWriter, r *http.Request) 
 
 	request, err := h.reqService.GetRequestById(requestId)
 	if err != nil {
-		if err == service.ErrRequestNotFound {
+		if err == service.ErrNotFound {
 			http.Error(w, "Request Not Found", http.StatusNotFound)
 			return
 		}

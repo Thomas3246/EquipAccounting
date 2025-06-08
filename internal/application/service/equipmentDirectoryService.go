@@ -48,7 +48,7 @@ func (s *EquipmentDirectoryService) GetEquipmentDirectory(id int) (domain.Equipm
 	directory, err := s.repo.GetDirectory(ctx, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return domain.EquipmentDirectory{}, ErrRequestNotFound
+			return domain.EquipmentDirectory{}, ErrNotFound
 		}
 		return domain.EquipmentDirectory{}, err
 	}

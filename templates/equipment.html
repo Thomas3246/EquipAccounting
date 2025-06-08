@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+{{define "content"}}
+
+<body>
+    <div class="form-container">
+        <h2>Редактирование оборудования</h2>
+
+        <form method="POST" action="/equipment/{{.Equipment.Id}}">
+            <div class="form-group">
+                <label for="invNum">Инвентарный номер:</label>
+                <input type="text" id="invNum" name="invNum"
+                       value="{{if .InvNum}}{{.InvNum}}{{else}}{{.Equipment.InvNum}}{{end}}"
+                       class="form-input {{if .InvNumError}}input-error{{end}}">
+                {{if .InvNumError}}
+                    <div class="error-message">{{.InvNumError}}</div>
+                {{end}}
+            </div>
+
+            <div class="form-group">
+                <label for="purchDate">Дата приобретения:</label>
+                <input type="text" id="purchDate" name="purchDate" value="{{.Equipment.PurchDate}}" readonly class="form-input readonly">
+            </div>
+
+            <div class="form-group">
+                <label for="regDate">Дата постановки на учет:</label>
+                <input type="text" id="regDate" name="regDate" value="{{.Equipment.RegDate}}" readonly class="form-input readonly">
+            </div>
+
+            {{if eq .Equipment.StatusId 2}}
+            <div class="form-group">
+                <label for="decomDate">Дата списания:</label>
+                <input type="text" id="decomDate" name="decomDate" value="{{.Equipment.DecomDate}}" readonly class="form-input readonly">
+            </div>
+            {{end}}
+
+            <div class="form-group">
+                <label for="directoryId">Модель оборудования:</label>
+                <select id="directoryId" name="directoryId" required class="form-input">
+                    {{range .Directories}}
+                        <option value="{{.Id}}" {{if eq .Id $.Equipment.DirectoryId}}selected{{end}}>
+                            {{.Name}} ({{.ReleaseYear}}, {{.Type}})
+                        </option>
+                    {{end}}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="departmentId">Подразделение:</label>
+                <select id="departmentId" name="departmentId" required class="form-input">
+                    {{range .Departments}}
+                        <option value="{{.Id}}" {{if eq .Id $.Equipment.DepartmentId}}selected{{end}}>
+                            {{.DivisionName}} - {{.Name}}
+                        </option>
+                    {{end}}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="statusId">Статус:</label>
+                <select id="statusId" name="statusId" disabled class="form-input readonly">
+                    {{range .States}}
+                        <option value="{{.Id}}" {{if eq .Id $.Equipment.StatusId}}selected{{end}}>{{.Name}}</option>
+                    {{end}}
+                </select>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+                <a href="/equipment" class="btn btn-secondary">Отмена</a>
+                <button type="button" class="btn btn-danger"
+                        onclick="if(confirm('Удалить это оборудование?')) {
+                            document.getElementById('delete-form').submit()
+                        }">
+                    Удалить
+                </button>
+            </div>
+        </form>
+
+        <form id="delete-form" method="POST" action="/equipment/{{.Equipment.Id}}/delete" style="display: none;"></form>
+    </div>
+</body>
+
+{{end}}
+</html>

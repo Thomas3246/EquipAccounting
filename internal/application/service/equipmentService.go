@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"strconv"
 	"strings"
 	"time"
@@ -72,4 +73,62 @@ func (s *EquipmentService) GetEquipmentViewByFilter(department, state int) ([]do
 	}
 
 	return equipment, nil
+}
+
+func (s *EquipmentService) GetEquipmentById(id int) (domain.Equipment, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	equipment, err := s.repo.GetEquipmentById(ctx, id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return domain.Equipment{}, ErrNotFound
+		}
+		return domain.Equipment{}, err
+	}
+
+	return equipment, nil
+}
+
+func (s *EquipmentService) CheckInvNumForFree(id int, newNum string) (isFree bool, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	busyEquipment, err := s.repo.GetEquipmentByInvNum(ctx, newNum)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// запись с таким инв.номером не найдена --> инв. номер свободен
+			return true, nil
+		}
+		return false, err
+	}
+
+	// если найденая запись и есть редактируемая запись
+	if id == busyEquipment.Id {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func (s *EquipmentService) UpdateEquipment(equipment domain.Equipment) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := s.repo.UpdateEquipment(ctx, equipment)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *EquipmentService) DeleteEquipment(id int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := s.repo.DeleteEquipment(ctx, id)
+	if err != nil {
+		return err
+	}
+	return nil
 }

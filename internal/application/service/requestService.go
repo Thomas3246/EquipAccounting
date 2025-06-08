@@ -165,7 +165,7 @@ func (s *RequestService) GetRequestById(id int) (domain.Request, error) {
 	request, err := s.repo.GetRequestById(ctx, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return request, ErrRequestNotFound
+			return request, ErrNotFound
 		}
 		return request, err
 	}
