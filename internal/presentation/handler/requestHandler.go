@@ -17,13 +17,20 @@ type RequestHandler struct {
 	reqService  service.RequestService
 	userService service.UserService
 	eqService   service.EquipmentService
+	docService  service.DocumentService
 }
 
-func NewRequestHandler(reqService *service.RequestService, userService *service.UserService, eqService *service.EquipmentService) *RequestHandler {
+func NewRequestHandler(
+	reqService *service.RequestService,
+	userService *service.UserService,
+	eqService *service.EquipmentService,
+	docServise *service.DocumentService,
+) *RequestHandler {
 	return &RequestHandler{
 		reqService:  *reqService,
 		userService: *userService,
 		eqService:   *eqService,
+		docService:  *docServise,
 	}
 }
 
@@ -400,6 +407,13 @@ func (h *RequestHandler) RequestEditGet(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	files, err := h.docService.GetDocumentsViewForRequest(requestId)
+	if err != nil {
+		http.Error(w, "Internal Server Errror", http.StatusInternalServerError)
+		log.Println("Ошибка при получении документов на заявку: ", err)
+		return
+	}
+
 	request, err := h.reqService.GetRequestById(requestId)
 	if err != nil {
 		if err == service.ErrNotFound {
@@ -445,12 +459,14 @@ func (h *RequestHandler) RequestEditGet(w http.ResponseWriter, r *http.Request) 
 		Equipment []domain.EquipmentView
 		Types     []domain.RequestType
 		Author    domain.User
+		Documents []domain.DocumentView
 	}{
 		Request:   request,
 		IsAdmin:   isAdmin,
 		Equipment: equipment,
 		Types:     requestTypes,
 		Author:    *user,
+		Documents: files,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")

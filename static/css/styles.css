@@ -275,3 +275,116 @@ h2 {
         align-items: stretch;
     }
 }
+
+/* Дополнения к существующим стилям */
+.file-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.file-button {
+    padding: 8px 12px;
+    background: #e9ecef;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+
+.file-name {
+    color: #6c757d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px;
+}
+
+input[type="file"] {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+}
+
+.hint {
+    display: block;
+    margin-top: 6px;
+    color: #6c757d;
+    font-size: 13px;
+}
+
+.btn-accent {
+    background-color: #28a745;
+}
+
+.btn-accent:hover {
+    background-color: #218838;
+}
+
+.icon {
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+.attached-files {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+.attached-files h3 {
+    color: #2c3e50;
+    margin-top: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 1rem;
+}
+
+.file-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.file-item:hover {
+    background-color: #f8f9fa;
+}
+
+.file-link:hover {
+    text-decoration: underline;
+}
+
+.btn-small {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #fdfdfd;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    transition: background-color 0.2s;
+    flex-wrap: nowrap;
+}
+
+.file-item form {
+    flex-shrink: 0;
+    margin: 0;
+}
+
+.file-link {
+    display: inline-block;
+    max-width: calc(100% - 40px); /* оставляем место под кнопку */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #0077cc;
+    text-decoration: none;
+}

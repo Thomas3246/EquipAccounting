@@ -10,11 +10,33 @@
 
         {{if eq .IsAdmin 1}}
             <div class="top-buttons">
-                <a href="/addfile/{{.Request.Id}}" class="btn">Добавить файл</a>
+                <form action="/request/{{.Request.Id}}/addDocument" method="GET" onsubmit="return confirm('Добавить файл к заявке?\n\nНесохраненные изменения будут сброшены');">
+                    <button type="submit" class="btn">Добавить файл</button>
+                </form>
                 {{if ne .Request.Status 2}}
-                    <a href="/closeRequest/{{.Request.Id}}" class="btn">Закрыть заявку</a>
+                    <a href="/request/{{.Request.Id}}/close" class="btn">Закрыть заявку</a>
                 {{end}}
             </div>
+        {{end}}
+
+        {{if .Documents}}
+            <div class="attached-files">
+                <h3>Прикрепленные файлы</h3>
+                <ul class="file-list">
+                    {{range .Documents}}
+                    <li class="file-item">
+                        <form action="/document/{{.Id}}/delete" method="POST" class="delete-form" onsubmit="return confirm('Удалить файл {{.Name}}?');">
+                            <button type="submit" class="btn btn-danger btn-small">✖</button>
+                        </form>
+                        <a href="/document/{{.Id}}" target="_blank" class="file-link">
+                            {{.Type}} (Добавлен {{.AddDate}}) — {{.UserLogin}}
+                        </a>
+                    </li>
+
+                    {{end}}
+                </ul>
+            </div>
+
         {{end}}
 
         {{if eq .Request.Status 2}}
@@ -140,8 +162,10 @@
                         {{end}}
                     {{end}}
                 </div>
-
-                <button type="submit" class="btn">Сохранить</button>
+                <div class="form-actions">
+                    <button type="submit" class="btn">Сохранить</button>
+                    <a href="/allactive" class="btn btn-secondary">Отмена</a>
+                </div>
             </form>
         {{end}}
     </div>

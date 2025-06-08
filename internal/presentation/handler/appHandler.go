@@ -7,15 +7,17 @@ import (
 type AppHandler struct {
 	UserHandler               *UserHandler
 	RequestHandler            *RequestHandler
-	EquipmantHandler          *EquipmentHandler
+	EquipmentHandler          *EquipmentHandler
 	EquipmentDirectoryHandler *EquipmentDirectoryHandler
+	DocumentHandler           *DocumentHandler
 }
 
 func NewAppHandler(service *service.ApplicationService) *AppHandler {
 	return &AppHandler{
 		UserHandler:               NewUserHandler(service.UserService, service.DepartmentService),
-		RequestHandler:            NewRequestHandler(service.RequestService, service.UserService, service.EquipmentService),
-		EquipmantHandler:          NewEquipmentHandler(service.EquipmentService, service.EquipmentDirectoryService, service.DepartmentService),
+		RequestHandler:            NewRequestHandler(service.RequestService, service.UserService, service.EquipmentService, service.DocumentService),
+		EquipmentHandler:          NewEquipmentHandler(service.EquipmentService, service.EquipmentDirectoryService, service.DepartmentService),
 		EquipmentDirectoryHandler: NewEquipmentDirectoryHandler(service.EquipmentDirectoryService, service.EquipmentService),
+		DocumentHandler:           NewDocumentHandler(service.DocumentService, service.UserService),
 	}
 }

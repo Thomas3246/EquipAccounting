@@ -11,8 +11,9 @@
         </nav>
     </header>
 
-    <main>
-        <h1>Создание новой заявки</h1>
+<body>
+    <div class="form-container">
+        <h2>Создание новой заявки</h2>
         
         <form method="POST" action="/newRequest">
             <div class="form-group">
@@ -45,10 +46,9 @@
                 ></textarea>
             </div>
             
-            <div class="form-actions">
-                <button type="submit">Создать заявку</button>
-            </div>
+            <button type="submit" class="btn">Создать заявку</button>
         </form>
-    </main>
+    </div>
+</body>
 {{end}}
 </html>

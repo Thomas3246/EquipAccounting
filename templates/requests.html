@@ -13,12 +13,12 @@
     </header>
 
     <div class="request-container">
-        <h1>
+        <h2>
             {{if eq .Flag "allactive"}}Активные заявки вашего отдела{{end}}
             {{if eq .Flag "alluseractive"}}Ваши активные заявки{{end}}
             {{if eq .Flag "allclosed"}}Закрытые заявки вашего отдела{{end}}
             {{if eq .Flag "alluserclosed"}}Ваши закрытые заявки{{end}}
-        </h1>
+        </h2>
 
         {{if .Requests}}
             {{range .Requests}}

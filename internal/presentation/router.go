@@ -64,15 +64,15 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 
 			// Equipment handlers
 
-			r.Get("/equipment", h.EquipmantHandler.EquipmentList)
+			r.Get("/equipment", h.EquipmentHandler.EquipmentList)
 
-			r.Get("/equipment/{id}", h.EquipmantHandler.EquipmentGet)
-			r.Post("/equipment/{id}", h.EquipmantHandler.EquipmentPost)
+			r.Get("/equipment/{id}", h.EquipmentHandler.EquipmentGet)
+			r.Post("/equipment/{id}", h.EquipmentHandler.EquipmentPost)
 
-			r.Get("/equipment/new", h.EquipmantHandler.NewEquipmentGet)
-			r.Post("/equipment/new", h.EquipmantHandler.NewEquipmentPost)
+			r.Get("/equipment/new", h.EquipmentHandler.NewEquipmentGet)
+			r.Post("/equipment/new", h.EquipmentHandler.NewEquipmentPost)
 
-			r.Post("/equipment/{id}/delete", h.EquipmantHandler.DeleteEquipment)
+			r.Post("/equipment/{id}/delete", h.EquipmentHandler.DeleteEquipment)
 
 			// Equipment Directory handlers
 
@@ -85,6 +85,15 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 			r.Post("/equipmentDirectory/new", h.EquipmentDirectoryHandler.NewDirectoryPost)
 
 			r.Post("/equipmentDirectory/{id}/delete", h.EquipmentDirectoryHandler.DeleteDirectory)
+
+			// Document handlers
+
+			r.Get("/request/{id}/addDocument", h.DocumentHandler.AddDocumentGet)
+			r.Post("/request/{id}/addDocument", h.DocumentHandler.AddDocumentPost)
+
+			r.Get("/document/{id}", h.DocumentHandler.DownloadDocument)
+
+			r.Post("/document/{id}/delete", h.DocumentHandler.DeleteDocument)
 
 		})
 
