@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+{{define "content"}}
+
+<body>
+    <div class="form-container">
+        <h2>Добавление нового оборудования</h2>
+
+        <form action="/equipment/new" method="POST">
+            <div class="form-group">
+                <label>Инвентарный номер</label>
+                <input type="text" name="inv_num" value="{{ .InvNum }}" required
+                       class="{{ if .InvNumError }}error-field{{ end }}">
+                {{ if .InvNumError }}
+                <div class="error-message">
+                    {{ .InvNumError }}
+                </div>
+                {{ end }}
+            </div>
+
+            <div class="form-group">
+                <label>Тип оборудования</label>
+                <select name="directory_id" required>
+                    <option value="" selected disabled>Выберите тип оборудования</option>
+                    {{ range .Directories }}
+                        <option value="{{ .Id }}" {{ if eq .Id $.SelectedDir }}selected{{ end }}>
+                            {{ .Name }} - {{ .ReleaseYear }} ( {{ .Type }} )
+                        </option>
+                    {{ end }}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Отдел</label>
+                <select name="department_id" required>
+                    <option value="" selected disabled>Выберите отдел</option>
+                    {{ range .Departments }}
+                        <option value="{{ .Id }}" {{ if eq .Id $.SelectedDept }}selected{{ end }}>
+                            {{ .Name }} - {{ .DivisionName }}
+                        </option>
+                    {{ end }}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Дата покупки (ГГГГ.ММ.ДД)</label>
+                <input type="text" name="purch_date" value="{{ .PurchDate }}" required
+                       class="{{ if .PurchError }}error-field{{ end }}">
+                {{ if .PurchError }}
+                <div class="error-message">
+                    {{ .PurchError }}
+                </div>
+                {{ end }}
+            </div>
+
+            <button type="submit" class="btn">Добавить</button>
+        </form>
+    </div>
+</body>
+
+{{end}}
+</html>

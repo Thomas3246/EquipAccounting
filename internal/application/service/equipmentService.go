@@ -90,7 +90,7 @@ func (s *EquipmentService) GetEquipmentById(id int) (domain.Equipment, error) {
 	return equipment, nil
 }
 
-func (s *EquipmentService) CheckInvNumForFree(id int, newNum string) (isFree bool, err error) {
+func (s *EquipmentService) CheckInvNumForFreeToChange(id int, newNum string) (isFree bool, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -127,6 +127,36 @@ func (s *EquipmentService) DeleteEquipment(id int) error {
 	defer cancel()
 
 	err := s.repo.DeleteEquipment(ctx, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *EquipmentService) CheckInvNumForFree(invNum string) (isFree bool, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err = s.repo.GetEquipmentByInvNum(ctx, invNum)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// запись с таким инв.номером не найдена --> инв. номер свободен
+			return true, nil
+		}
+		return false, err
+	}
+
+	return false, nil
+}
+
+func (s *EquipmentService) NewEquipment(equipment domain.Equipment) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	equipment.RegDate = time.Now().Format("2006.01.02")
+	equipment.StatusId = 1
+
+	err := s.repo.AddEquipment(ctx, equipment)
 	if err != nil {
 		return err
 	}

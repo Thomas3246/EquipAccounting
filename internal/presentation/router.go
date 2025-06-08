@@ -69,6 +69,9 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 			r.Get("/equipment/{id}", h.EquipmantHandler.EquipmentGet)
 			r.Post("/equipment/{id}", h.EquipmantHandler.EquipmentPost)
 
+			r.Get("/equipment/new", h.EquipmantHandler.NewEquipmentGet)
+			r.Post("/equipment/new", h.EquipmantHandler.NewEquipmentPost)
+
 			r.Post("/equipment/{id}/delete", h.EquipmantHandler.DeleteEquipment)
 
 			// Equipment Directory handlers

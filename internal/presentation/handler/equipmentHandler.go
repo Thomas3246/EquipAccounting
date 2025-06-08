@@ -8,6 +8,7 @@ import (
 
 	"github.com/Thomas3246/EquipAccounting/internal/application/service"
 	"github.com/Thomas3246/EquipAccounting/internal/domain"
+	datevalidate "github.com/Thomas3246/EquipAccounting/pkg/dateValidate"
 	"github.com/Thomas3246/EquipAccounting/pkg/templateloader"
 	"github.com/go-chi/chi/v5"
 )
@@ -186,7 +187,7 @@ func (h *EquipmentHandler) EquipmentPost(w http.ResponseWriter, r *http.Request)
 	departmentStr := r.Form.Get("departmentId")
 	department, _ := strconv.Atoi(departmentStr)
 
-	invNumIsFree, err := h.EquipService.CheckInvNumForFree(id, invNum)
+	invNumIsFree, err := h.EquipService.CheckInvNumForFreeToChange(id, invNum)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		log.Println("Ошибка при проверке инв. номера: ", err)
@@ -289,6 +290,154 @@ func (h *EquipmentHandler) DeleteEquipment(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		log.Println("Ошибка при удалении оборудования: ", err)
+		return
+	}
+
+	http.Redirect(w, r, "/equipment", http.StatusSeeOther)
+}
+
+func (h *EquipmentHandler) NewEquipmentGet(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles(templateloader.GetTemplatePath("base.html"), templateloader.GetTemplatePath("newEquipment.html"))
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		log.Println("Error by parse", err)
+		return
+	}
+
+	directories, err := h.EquipmentDirectoryService.GetEquipmentDirectoriesViewByFilter(0)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при получении оборудования: ", err)
+		return
+	}
+
+	departments, err := h.DepartmentService.GetDepartmentsView()
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при получении оборудования: ", err)
+		return
+	}
+
+	templData := struct {
+		IsAdmin      int
+		Directories  []domain.EquipmentDirectoryView
+		Departments  []domain.DepartmentView
+		InvNum       string
+		InvNumError  string
+		SelectedDir  int
+		SelectedDept int
+		PurchDate    string
+		PurchError   string
+	}{
+		IsAdmin:      1,
+		Directories:  directories,
+		Departments:  departments,
+		InvNum:       "",
+		InvNumError:  "",
+		SelectedDir:  0,
+		SelectedDept: 0,
+		PurchDate:    "",
+		PurchError:   "",
+	}
+
+	err = tmpl.Execute(w, templData)
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		log.Println("Error by execute", err)
+	}
+}
+
+func (h *EquipmentHandler) NewEquipmentPost(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	invNum := r.FormValue("inv_num")
+	directoryStr := r.FormValue("directory_id")
+	directoryId, _ := strconv.Atoi(directoryStr)
+	departmentStr := r.FormValue("department_id")
+	departmentId, _ := strconv.Atoi(departmentStr)
+	purchDate := r.FormValue("purch_date")
+
+	isFree, err := h.EquipService.CheckInvNumForFree(invNum)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при проверке инв. номера: ", err)
+		return
+	}
+
+	if !isFree || !datevalidate.ValidateDate(purchDate) {
+		tmpl, err := template.ParseFiles(templateloader.GetTemplatePath("base.html"), templateloader.GetTemplatePath("newEquipment.html"))
+		if err != nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			log.Println("Error by parse", err)
+			return
+		}
+
+		directories, err := h.EquipmentDirectoryService.GetEquipmentDirectoriesViewByFilter(0)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			log.Println("Ошибка при получении оборудования: ", err)
+			return
+		}
+
+		departments, err := h.DepartmentService.GetDepartmentsView()
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			log.Println("Ошибка при получении оборудования: ", err)
+			return
+		}
+
+		templData := struct {
+			IsAdmin      int
+			Directories  []domain.EquipmentDirectoryView
+			Departments  []domain.DepartmentView
+			InvNum       string
+			InvNumError  string
+			SelectedDir  int
+			SelectedDept int
+			PurchDate    string
+			PurchError   string
+		}{
+			IsAdmin:      1,
+			Directories:  directories,
+			Departments:  departments,
+			InvNum:       invNum,
+			InvNumError:  "",
+			SelectedDir:  directoryId,
+			SelectedDept: departmentId,
+			PurchDate:    purchDate,
+			PurchError:   "",
+		}
+
+		if !isFree {
+			templData.InvNumError = "Инвентарный номер занят"
+		}
+
+		if !datevalidate.ValidateDate(purchDate) {
+			templData.PurchError = "Дата неправильного формата"
+		}
+
+		err = tmpl.Execute(w, templData)
+		if err != nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			log.Println("Error by execute", err)
+		}
+		return
+	}
+
+	equipment := domain.Equipment{
+		InvNum:       invNum,
+		DirectoryId:  directoryId,
+		DepartmentId: departmentId,
+		PurchDate:    purchDate,
+	}
+
+	err = h.EquipService.NewEquipment(equipment)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка добавления оборудования: ", err)
 		return
 	}
 

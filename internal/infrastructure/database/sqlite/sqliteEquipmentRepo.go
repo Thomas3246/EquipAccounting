@@ -183,6 +183,17 @@ func (r *EquipmentRepo) UpdateEquipment(ctx context.Context, equipment domain.Eq
 	return nil
 }
 
+func (r *EquipmentRepo) AddEquipment(ctx context.Context, equipment domain.Equipment) error {
+	query := `INSERT INTO equipment (invNum, purchDate, regDate, directory, department, status)
+			  VALUES (?, ?, ?, ?, ?, ?)`
+
+	_, err := r.db.ExecContext(ctx, query, equipment.InvNum, equipment.PurchDate, equipment.RegDate, equipment.DirectoryId, equipment.DepartmentId, equipment.StatusId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *EquipmentRepo) DeleteEquipment(ctx context.Context, id int) error {
 	query := `DELETE FROM equipment WHERE id = ?`
 

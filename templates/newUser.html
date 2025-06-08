@@ -25,6 +25,7 @@
             <div class="form-group">
                 <label>Отдел</label>
                 <select name="department_id" required>
+                    <option value="" selected disabled>Выберите отдел</option>
                     {{range .Departments}}
                         <option value="{{.Id}}">{{.Name}} - {{.DivisionName}}</option>
                     {{end}}
