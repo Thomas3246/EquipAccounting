@@ -306,3 +306,57 @@ func (s *RequestRepo) UpdateRequest(ctx context.Context, request domain.Request)
 	_, err := s.db.ExecContext(ctx, query, request.Type, request.Description, request.Equipment, request.Id)
 	return err
 }
+
+func (r *RequestRepo) GetResults(ctx context.Context) (results []domain.RequestResult, err error) {
+	query := `SELECT id, name FROM requestResult`
+
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		r := domain.RequestResult{}
+		err = rows.Scan(&r.Id, &r.Name)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, r)
+	}
+	return results, nil
+}
+
+func (r *RequestRepo) GetRequestsWithEquipment(ctx context.Context, equipId int) (requests []domain.Request, err error) {
+	query := `SELECT id, requestType, description, requestAuthor, status, createdAt, COALESCE(closedAt, '') as closedAt, equipment, COALESCE(result, 0) as result
+			  FROM request
+			  WHERE status = 1 AND equipment = ?`
+
+	rows, err := r.db.QueryContext(ctx, query, equipId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		r := domain.Request{}
+		err = rows.Scan(&r.Id, &r.Type, &r.Description, &r.Author, &r.Author, &r.CreatedAt, &r.ClosedAt, &r.Equipment, &r.Result)
+		if err != nil {
+			return nil, err
+		}
+		requests = append(requests, r)
+	}
+	return requests, nil
+}
+
+func (r *RequestRepo) CloseRequest(ctx context.Context, requestId int, resultId int, closedAt string) error {
+	query := `UPDATE request
+			  SET status = 2, closedAt = ?, result = ?
+			  WHERE id = ?`
+
+	_, err := r.db.ExecContext(ctx, query, closedAt, resultId, requestId)
+	if err != nil {
+		return err
+	}
+	return nil
+}

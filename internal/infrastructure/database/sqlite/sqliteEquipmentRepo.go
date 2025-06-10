@@ -93,7 +93,7 @@ func (r *EquipmentRepo) GetEquipmentStates(ctx context.Context) (states []domain
 
 func (r *EquipmentRepo) GetEquipmentViewByFilter(ctx context.Context, department, state int) (equipment []domain.EquipmentView, err error) {
 	query := `SELECT e.id, e.invNum, e.purchDate, e.regDate, 
-			  	  COALESCE(e.decomDate, '') AS decomDate, dir.name || " " ||  COALESCE(dir.releaseYear, ''), dep.name || depdiv.name, es.Name
+			  	  COALESCE(e.decomDate, '') AS decomDate, dir.name || " " ||  COALESCE(dir.releaseYear, ''), dep.name || " - " || depdiv.name, es.Name
 			  FROM equipment AS e
 			  INNER JOIN equipDirectory AS dir ON e.directory = dir.id
 			  INNER JOIN department AS dep ON e.department = dep.id
@@ -173,10 +173,10 @@ func (r *EquipmentRepo) GetEquipmentByInvNum(ctx context.Context, invNum string)
 
 func (r *EquipmentRepo) UpdateEquipment(ctx context.Context, equipment domain.Equipment) error {
 	query := `UPDATE equipment
-			  SET invNum = ?, directory = ?, department = ?
+			  SET invNum = ?, directory = ?, department = ?, status = ?
 			  WHERE id = ?`
 
-	_, err := r.db.ExecContext(ctx, query, equipment.InvNum, equipment.DirectoryId, equipment.DepartmentId, equipment.Id)
+	_, err := r.db.ExecContext(ctx, query, equipment.InvNum, equipment.DirectoryId, equipment.DepartmentId, equipment.StatusId, equipment.Id)
 	if err != nil {
 		return err
 	}
@@ -202,4 +202,54 @@ func (r *EquipmentRepo) DeleteEquipment(ctx context.Context, id int) error {
 		return err
 	}
 	return nil
+}
+
+func (r *EquipmentRepo) ChangeEquipStatus(ctx context.Context, equipId int, status int) error {
+	query := `UPDATE equipment 
+			  SET status = ?
+			  WHERE id = ?`
+
+	_, err := r.db.ExecContext(ctx, query, status, equipId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *EquipmentRepo) DecomEquipment(ctx context.Context, equipId int, decomDate string) error {
+	query := `UPDATE equipment
+			  SET decomDate = ?, status = 2
+			  WHERE id = ?`
+
+	_, err := r.db.ExecContext(ctx, query, decomDate, equipId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *EquipmentRepo) GetAllEquipment(ctx context.Context) (equipment []domain.EquipmentView, err error) {
+	query := `SELECT e.id, e.invNum, e.purchDate, e.regDate, 
+			  	  COALESCE(e.decomDate, '') AS decomDate, dir.name || " " ||  COALESCE(dir.releaseYear, ''), dep.name || " - " || depdiv.name, es.Name
+			  FROM equipment AS e
+			  INNER JOIN equipDirectory AS dir ON e.directory = dir.id
+			  INNER JOIN department AS dep ON e.department = dep.id
+			  INNER JOIN departmentDivisions AS depdiv ON dep.division = depdiv.id
+			  INNER JOIN equipStatus AS es ON e.status = es.id`
+
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		e := domain.EquipmentView{}
+		err = rows.Scan(&e.Id, &e.InvNum, &e.PurchDate, &e.RegDate, &e.DecomDate, &e.Directory, &e.Department, &e.Status)
+		if err != nil {
+			return nil, err
+		}
+		equipment = append(equipment, e)
+	}
+	return equipment, nil
 }

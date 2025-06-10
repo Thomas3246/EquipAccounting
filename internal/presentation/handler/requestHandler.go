@@ -377,6 +377,13 @@ func (h *RequestHandler) NewRequestPost(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	err = h.eqService.ChangeEquipmentStatus(equipmentId)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при изменении статуса оборудования: ", err)
+		return
+	}
+
 	http.Redirect(w, r, "/allactive", http.StatusSeeOther)
 }
 
@@ -439,6 +446,13 @@ func (h *RequestHandler) RequestEditGet(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	allEquipment, err := h.eqService.GetAllEquipment()
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при получении оборудования: ", err)
+		return
+	}
+
 	requestTypes, err := h.reqService.GetRequestTypes()
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -454,19 +468,21 @@ func (h *RequestHandler) RequestEditGet(w http.ResponseWriter, r *http.Request) 
 	}
 
 	templData := struct {
-		Request   domain.Request
-		IsAdmin   int
-		Equipment []domain.EquipmentView
-		Types     []domain.RequestType
-		Author    domain.User
-		Documents []domain.DocumentView
+		Request      domain.Request
+		IsAdmin      int
+		Equipment    []domain.EquipmentView
+		Types        []domain.RequestType
+		Author       domain.User
+		Documents    []domain.DocumentView
+		AllEquipment []domain.EquipmentView
 	}{
-		Request:   request,
-		IsAdmin:   isAdmin,
-		Equipment: equipment,
-		Types:     requestTypes,
-		Author:    *user,
-		Documents: files,
+		Request:      request,
+		IsAdmin:      isAdmin,
+		Equipment:    equipment,
+		Types:        requestTypes,
+		Author:       *user,
+		Documents:    files,
+		AllEquipment: allEquipment,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -533,6 +549,95 @@ func (h *RequestHandler) RequestEditPost(w http.ResponseWriter, r *http.Request)
 			log.Println("Ошибка при редактировании заявки: ", err)
 			return
 		}
+	}
+
+	http.Redirect(w, r, "/allactive", http.StatusSeeOther)
+}
+
+func (h *RequestHandler) CloseRequestGet(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles(templateloader.GetTemplatePath("base.html"), templateloader.GetTemplatePath("requestClose.html"))
+	if err != nil {
+		http.Error(w, "Server Error", http.StatusInternalServerError)
+		log.Println("Template Parse Error: ", err)
+		return
+	}
+
+	requestId, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	results, err := h.reqService.GetRequestResults()
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при получении результатов: ", err)
+		return
+	}
+
+	templData := struct {
+		IsAdmin        int
+		RequestId      int
+		RequestResults []domain.RequestResult
+	}{
+		IsAdmin:        1,
+		RequestId:      requestId,
+		RequestResults: results,
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	err = tmpl.Execute(w, templData)
+	if err != nil {
+		http.Error(w, "Server Error", http.StatusInternalServerError)
+		log.Println("Template Execute Error: ", err)
+	}
+}
+
+func (h *RequestHandler) CloseRequestPost(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	requestId, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	result := r.Form.Get("result_id")
+	resultId, _ := strconv.Atoi(result)
+
+	equipId, err := h.reqService.RequestIsTheOnlyOne(requestId)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка получения заявок оборудования: ", err)
+		return
+	}
+	if equipId > 0 {
+		if resultId == 2 {
+			err = h.eqService.DecomEquipment(equipId)
+			if err != nil {
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				log.Println("Ошибка списания оборудования: ", err)
+				return
+			}
+		} else {
+			err = h.eqService.ChangeEquipStatusByResult(equipId, resultId)
+			if err != nil {
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				log.Println("Ошибка изменения статуса оборудования: ", err)
+				return
+			}
+		}
+	}
+
+	err = h.reqService.CloseRequest(requestId, resultId)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при закрытии заявки: ", err)
+		return
 	}
 
 	http.Redirect(w, r, "/allactive", http.StatusSeeOther)

@@ -58,7 +58,7 @@
 
             <div class="form-group">
                 <label for="statusId">Статус:</label>
-                <select id="statusId" name="statusId" disabled class="form-input readonly">
+                <select id="statusId" name="statusId" required class="form-input">
                     {{range .States}}
                         <option value="{{.Id}}" {{if eq .Id $.Equipment.StatusId}}selected{{end}}>{{.Name}}</option>
                     {{end}}

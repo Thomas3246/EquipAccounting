@@ -19,4 +19,7 @@ type RequestRepo interface {
 	GetRequestById(context.Context, int) (domain.Request, error)
 	UpdateDescription(context.Context, int, string) error
 	UpdateRequest(context.Context, domain.Request) error
+	GetResults(context.Context) ([]domain.RequestResult, error)
+	GetRequestsWithEquipment(context.Context, int) ([]domain.Request, error)
+	CloseRequest(context.Context, int, int, string) error
 }

@@ -186,6 +186,8 @@ func (h *EquipmentHandler) EquipmentPost(w http.ResponseWriter, r *http.Request)
 	directory, _ := strconv.Atoi(directoryStr)
 	departmentStr := r.Form.Get("departmentId")
 	department, _ := strconv.Atoi(departmentStr)
+	statusStr := r.Form.Get("statusId")
+	status, _ := strconv.Atoi(statusStr)
 
 	invNumIsFree, err := h.EquipService.CheckInvNumForFreeToChange(id, invNum)
 	if err != nil {
@@ -199,6 +201,7 @@ func (h *EquipmentHandler) EquipmentPost(w http.ResponseWriter, r *http.Request)
 		InvNum:       invNum,
 		DirectoryId:  directory,
 		DepartmentId: department,
+		StatusId:     status,
 	}
 
 	if invNumIsFree {

@@ -44,7 +44,7 @@ func (r *UserRepo) GetByLogin(ctx context.Context, login string) (*domain.User, 
 }
 
 func (r *UserRepo) GetUsersView(ctx context.Context) (users []domain.ViewUser, err error) {
-	query := `SELECT u.id, u.login, u.name, dep.name || " " || div.name
+	query := `SELECT u.id, u.login, u.name, dep.name || " - " || div.name
 			  FROM users AS u
 			  INNER JOIN department AS dep ON u.department = dep.id
 			  INNER JOIN departmentDivisions AS div ON dep.division = div.id

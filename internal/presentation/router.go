@@ -95,6 +95,13 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 
 			r.Post("/document/{id}/delete", h.DocumentHandler.DeleteDocument)
 
+			// Request handlers
+
+			r.Get("/request/{id}/close", h.RequestHandler.CloseRequestGet)
+			r.Post("/request/{id}/close", h.RequestHandler.CloseRequestPost)
+
+			// r.Get("/request/{id}/")
+
 		})
 
 	})

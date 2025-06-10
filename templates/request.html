@@ -82,9 +82,9 @@
 
             <div class="form-group">
                 <label>Оборудование</label>
-                {{range .Equipment}}
+                {{range .AllEquipment}}
                     {{if eq $.Request.Equipment .Id}}
-                        <input type="text" value="{{.Directory}} / {{.Department}} / {{.InvNum}}" readonly class="readonly">
+                        <input type="text" value="{{.Directory}} / {{.Department}} / ( {{.InvNum}} )" readonly class="readonly">
                     {{end}}
                 {{end}}
             </div>
@@ -150,14 +150,14 @@
                     <label>Оборудование</label>
                     {{if eq .IsAdmin 1}}
                         <select name="equipment">
-                            {{range .Equipment}}
-                                <option value="{{.Id}}" {{if eq $.Request.Equipment .Id}}selected{{end}}>{{.Directory}} / {{.Department}} / {{.InvNum}}</option>
+                            {{range .AllEquipment}}
+                                <option value="{{.Id}}" {{if eq $.Request.Equipment .Id}}selected{{end}}>{{.Directory}} / {{.Department}} / ( {{.InvNum}} )</option>
                             {{end}}
                         </select>
                     {{else}}
-                        {{range .Equipment}}
+                        {{range .AllEquipment}}
                             {{if eq $.Request.Equipment .Id}}
-                                <input type="text" value="{{.Directory}} / {{.Department}} / {{.InvNum}}" readonly class="readonly">
+                                <input type="text" value="{{.Directory}} / {{.Department}} ( {{.InvNum}} )" readonly class="readonly">
                             {{end}}
                         {{end}}
                     {{end}}

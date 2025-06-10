@@ -30,7 +30,7 @@
                     <a href="/equipmentDirectory/{{.Id}}" class="equipment-block">
                         <div><strong>Наименование:</strong> {{.Name}}</div>
                         <div><strong>Тип:</strong> {{.Type}}</div>
-                        <div><strong>Год выпуска:</strong> {{.ReleaseYear}}</div>
+                        {{if .ReleaseYear}}  <div><strong>Год выпуска:</strong> {{.ReleaseYear}}</div> {{end}}
                     </a>
 
                     <form action="/equipmentDirectory/{{.Id}}/delete" method="POST" class="delete-form" 

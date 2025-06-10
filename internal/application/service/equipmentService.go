@@ -162,3 +162,53 @@ func (s *EquipmentService) NewEquipment(equipment domain.Equipment) error {
 	}
 	return nil
 }
+
+func (s *EquipmentService) ChangeEquipStatusByResult(equipId int, resultId int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var statusToSet int
+	if resultId == 1 {
+		statusToSet = 1
+	}
+
+	err := s.repo.ChangeEquipStatus(ctx, equipId, statusToSet)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *EquipmentService) ChangeEquipmentStatus(equipmentId int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := s.repo.ChangeEquipStatus(ctx, equipmentId, 3)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *EquipmentService) DecomEquipment(equipId int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	decomDate := time.Now().Format("2006.01.02")
+	err := s.repo.DecomEquipment(ctx, equipId, decomDate)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *EquipmentService) GetAllEquipment() ([]domain.EquipmentView, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	equipment, err := s.repo.GetAllEquipment(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return equipment, nil
+}

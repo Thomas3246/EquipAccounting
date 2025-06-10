@@ -16,4 +16,7 @@ type EquipmentRepo interface {
 	UpdateEquipment(context.Context, domain.Equipment) error
 	DeleteEquipment(context.Context, int) error
 	AddEquipment(context.Context, domain.Equipment) error
+	ChangeEquipStatus(context.Context, int, int) error
+	DecomEquipment(context.Context, int, string) error
+	GetAllEquipment(context.Context) ([]domain.EquipmentView, error)
 }

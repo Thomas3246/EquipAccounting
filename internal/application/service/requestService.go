@@ -186,3 +186,45 @@ func (s *RequestService) EditRequest(request domain.Request) error {
 
 	return s.repo.UpdateRequest(ctx, request)
 }
+
+func (s *RequestService) GetRequestResults() (types []domain.RequestResult, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	types, err = s.repo.GetResults(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return types, nil
+}
+
+func (s *RequestService) RequestIsTheOnlyOne(requestId int) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	request, err := s.repo.GetRequestById(ctx, requestId)
+	if err != nil {
+		return 0, err
+	}
+
+	requests, err := s.repo.GetRequestsWithEquipment(ctx, request.Equipment)
+	if err != nil {
+		return 0, err
+	}
+	if len(requests) == 1 && requests[0].Id == requestId {
+		return request.Equipment, nil
+	}
+	return 0, nil
+}
+
+func (s *RequestService) CloseRequest(requestId int, resultId int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	closedAt := time.Now().Format("2006.01.02 15:04")
+	err := s.repo.CloseRequest(ctx, requestId, resultId, closedAt)
+	if err != nil {
+		return err
+	}
+	return nil
+}

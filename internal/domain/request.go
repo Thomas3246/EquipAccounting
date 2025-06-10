@@ -9,6 +9,7 @@ type Request struct {
 	CreatedAt   string
 	ClosedAt    string
 	Equipment   int
+	Result      int
 }
 
 type RequestView struct {
@@ -20,9 +21,15 @@ type RequestView struct {
 	CreatedAt   string
 	ClosedAt    string
 	Equipment   string
+	Result      string
 }
 
 type RequestType struct {
+	Id   int
+	Name string
+}
+
+type RequestResult struct {
 	Id   int
 	Name string
 }
