@@ -676,9 +676,18 @@ func (h *RequestHandler) FormReport(w http.ResponseWriter, r *http.Request) {
 	}
 	adminLogin := parts[0]
 
-	report, err := h.reqService.FormReportForRequest(requestId, adminLogin)
+	reportBytes, err := h.reqService.FormReportForRequest(requestId, adminLogin)
 	if err != nil {
-		fmt.Println(err)
+		http.Error(w, "Ошибка генерации документа", http.StatusInternalServerError)
+		log.Println("Ошибка генерации документа: ", err)
+		return
 	}
-	fmt.Println(report)
+
+	w.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+	w.Header().Set("Content-Disposition", "attachment; filename=act_obslyj.docx")
+	w.Header().Set("Content-Length", strconv.Itoa(len(reportBytes)))
+	if _, err := w.Write(reportBytes); err != nil {
+		http.Error(w, "Ошибка отправки файла", http.StatusInternalServerError)
+	}
+
 }

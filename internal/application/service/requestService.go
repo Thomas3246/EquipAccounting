@@ -3,12 +3,14 @@ package service
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/Thomas3246/EquipAccounting/internal/domain"
 	"github.com/Thomas3246/EquipAccounting/internal/infrastructure/database"
+	"github.com/Thomas3246/EquipAccounting/pkg/docxtemplate"
 )
 
 type RequestService struct {
@@ -229,13 +231,78 @@ func (s *RequestService) CloseRequest(requestId int, resultId int, resultDescr s
 	return nil
 }
 
-func (s *RequestService) FormReportForRequest(requestId int, adminLogin string) (domain.RequestReport, error) {
+func (s *RequestService) FormReportForRequest(requestId int, adminLogin string) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	report, err := s.repo.GetReportData(ctx, requestId, adminLogin)
+	requestData, err := s.repo.GetReportData(ctx, requestId, adminLogin)
+	if err != nil {
+		return nil, fmt.Errorf("GetReportData failed: %v", err)
+	}
 
-	return report, err
+	switch requestData.TypeId {
+	case 1:
 
-	// возвращает docx файлы в виде byte, что позволяет скачать их в handler
+		fileBytes, err := docxtemplate.ReplacePlaceholders("../templates/docx/obslyj.docx", map[string]string{
+			"requestId":           strconv.Itoa(requestId),
+			"createdAt":           requestData.CreatedAt,
+			"adminName":           requestData.AdminName,
+			"equipmentDepartment": requestData.Equipment.Department,
+			"equipmentDirectory":  requestData.Equipment.Directory,
+			"equipmentInvNum":     requestData.Equipment.InvNum,
+			"description":         requestData.Description,
+			"equipmentPurchDate":  requestData.Equipment.PurchDate,
+			"equipmentRegDate":    requestData.Equipment.RegDate,
+			"resultDescr":         requestData.ResultDescr,
+			"reportDate":          time.Now().Format("2006.01.02"),
+		})
+		if err != nil {
+			return nil, err
+		}
+		return fileBytes, nil
+
+	case 2:
+		if requestData.ResultId == 1 {
+			fileBytes, err := docxtemplate.ReplacePlaceholders("../templates/docx/osmotr.docx", map[string]string{
+				"requestId":           strconv.Itoa(requestId),
+				"createdAt":           requestData.CreatedAt,
+				"adminName":           requestData.AdminName,
+				"equipmentDepartment": requestData.Equipment.Department,
+				"equipmentDirectory":  requestData.Equipment.Directory,
+				"equipmentInvNum":     requestData.Equipment.InvNum,
+				"description":         requestData.Description,
+				"equipmentPurchDate":  requestData.Equipment.PurchDate,
+				"equipmentRegDate":    requestData.Equipment.RegDate,
+				"resultDescr":         requestData.ResultDescr,
+				"reportDate":          time.Now().Format("2006.01.02"),
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			return fileBytes, nil
+		}
+		if requestData.ResultId == 2 {
+			fileBytes, err := docxtemplate.ReplacePlaceholders("../templates/docx/spisanie.docx", map[string]string{
+				"requestId":           strconv.Itoa(requestId),
+				"createdAt":           requestData.CreatedAt,
+				"adminName":           requestData.AdminName,
+				"equipmentDepartment": requestData.Equipment.Department,
+				"equipmentDirectory":  requestData.Equipment.Directory,
+				"equipmentInvNum":     requestData.Equipment.InvNum,
+				"description":         requestData.Description,
+				"equipmentPurchDate":  requestData.Equipment.PurchDate,
+				"equipmentRegDate":    requestData.Equipment.RegDate,
+				"resultDescr":         requestData.ResultDescr,
+				"reportDate":          time.Now().Format("2006.01.02"),
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			return fileBytes, nil
+		}
+	}
+
+	return nil, fmt.Errorf("unsupported TypeId: %d", requestData.TypeId)
 }

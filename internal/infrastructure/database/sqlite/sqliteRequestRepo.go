@@ -366,7 +366,7 @@ func (r *RequestRepo) GetReportData(ctx context.Context, requestId int, userAdmi
 				  	r.id, r.requestType, COALESCE(r.description, '') as description, r.createdAt, r.result, r.resultDescr, 
 				  	(SELECT u.name FROM users AS u WHERE u.login = ?),
 				  	e.invNum, e.purchDate, e.regDate,
-				  	ed.name || ' ' || ed.releaseYear,
+				  	ed.name || ' ' || COALESCE(ed.releaseYear, '') as releaseYear,
 				  	dep.name || ' ' || depdiv.name
 			  	FROM
 					request AS r 
@@ -380,7 +380,7 @@ func (r *RequestRepo) GetReportData(ctx context.Context, requestId int, userAdmi
 	if row.Err() != nil {
 		return domain.RequestReport{}, row.Err()
 	}
-	err = row.Scan(&report.RequestId, &report.TypeId, &report.Desctiption, &report.CreatedAt, &report.ResultId, &report.ResultDescr, &report.AuthorName, &report.Equipment.InvNum,
+	err = row.Scan(&report.RequestId, &report.TypeId, &report.Description, &report.CreatedAt, &report.ResultId, &report.ResultDescr, &report.AdminName, &report.Equipment.InvNum,
 		&report.Equipment.PurchDate, &report.Equipment.RegDate, &report.Equipment.Directory, &report.Equipment.Department)
 	if err != nil {
 		return domain.RequestReport{}, err

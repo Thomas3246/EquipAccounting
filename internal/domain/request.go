@@ -39,8 +39,8 @@ type RequestResult struct {
 type RequestReport struct {
 	RequestId   int
 	TypeId      int
-	Desctiption string
-	AuthorName  string
+	Description string
+	AdminName   string
 	CreatedAt   string
 	Equipment   EquipmentView
 	ResultId    int
