@@ -20,6 +20,16 @@
                 </select>
             </div>
 
+            <div class="form-group">
+                <label for="resultDescr">Описание результата заявки:</label>
+                <textarea 
+                    id="resultDescr" 
+                    name="resultDescr" 
+                    rows="5" 
+                    placeholder="Кратко перечислите выполненные работы или обнаруженные несиправности"
+                ></textarea>
+            </div>
+
             <div class="form-actions">
                 <form action="/request/{{.RequestId}}/close" method="POST" onsubmit="return confirm('\nЗакрыть заявку?\n\nПосле закрытия, заявка станет неизменяемой.\nОстанется доступным только прикрепление документов\n\nЕсли по данному оборудованию открыты другие заявки, состояние этого оборудования не будет измененено');">
                     <button type="submit" class="btn">Закрыть заявку</button>

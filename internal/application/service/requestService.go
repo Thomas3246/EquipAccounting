@@ -217,14 +217,25 @@ func (s *RequestService) RequestIsTheOnlyOne(requestId int) (int, error) {
 	return 0, nil
 }
 
-func (s *RequestService) CloseRequest(requestId int, resultId int) error {
+func (s *RequestService) CloseRequest(requestId int, resultId int, resultDescr string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	closedAt := time.Now().Format("2006.01.02 15:04")
-	err := s.repo.CloseRequest(ctx, requestId, resultId, closedAt)
+	err := s.repo.CloseRequest(ctx, requestId, resultId, closedAt, resultDescr)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (s *RequestService) FormReportForRequest(requestId int, adminLogin string) (domain.RequestReport, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	report, err := s.repo.GetReportData(ctx, requestId, adminLogin)
+
+	return report, err
+
+	// возвращает docx файлы в виде byte, что позволяет скачать их в handler
 }

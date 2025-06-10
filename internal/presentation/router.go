@@ -100,7 +100,7 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 			r.Get("/request/{id}/close", h.RequestHandler.CloseRequestGet)
 			r.Post("/request/{id}/close", h.RequestHandler.CloseRequestPost)
 
-			// r.Get("/request/{id}/")
+			r.Get("/request/{id}/report", h.RequestHandler.FormReport)
 
 		})
 

@@ -21,5 +21,6 @@ type RequestRepo interface {
 	UpdateRequest(context.Context, domain.Request) error
 	GetResults(context.Context) ([]domain.RequestResult, error)
 	GetRequestsWithEquipment(context.Context, int) ([]domain.Request, error)
-	CloseRequest(context.Context, int, int, string) error
+	CloseRequest(context.Context, int, int, string, string) error
+	GetReportData(context.Context, int, string) (domain.RequestReport, error)
 }

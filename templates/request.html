@@ -16,6 +16,9 @@
                 {{if ne .Request.Status 2}}
                     <a href="/request/{{.Request.Id}}/close" class="btn">Закрыть заявку</a>
                 {{end}}
+                {{if eq .Request.Status 2}}
+                    <a href="/request/{{.Request.Id}}/report" class="btn">Сформировать акт</a>
+                {{end}}
             </div>
         {{end}}
 
@@ -87,6 +90,20 @@
                         <input type="text" value="{{.Directory}} / {{.Department}} / ( {{.InvNum}} )" readonly class="readonly">
                     {{end}}
                 {{end}}
+            </div>
+
+            <div class="form-group">
+                <label>Результат заявки</label>
+                {{range .Results}}
+                    {{if eq $.Request.Result .Id}}
+                        <input type="text" value="{{.Name}}" readonly class="readonly">
+                    {{end}}
+                {{end}}
+            </div>
+
+            <div class="form-group">
+                <label>Описание результата заявки</label>
+                <textarea readonly class="readonly">{{.Request.ResultDescr}}</textarea>
             </div>
 
         {{else}}

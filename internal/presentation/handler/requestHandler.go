@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -467,6 +468,13 @@ func (h *RequestHandler) RequestEditGet(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	results, err := h.reqService.GetRequestResults()
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при получении результатов заявки: ", err)
+		return
+	}
+
 	templData := struct {
 		Request      domain.Request
 		IsAdmin      int
@@ -475,6 +483,7 @@ func (h *RequestHandler) RequestEditGet(w http.ResponseWriter, r *http.Request) 
 		Author       domain.User
 		Documents    []domain.DocumentView
 		AllEquipment []domain.EquipmentView
+		Results      []domain.RequestResult
 	}{
 		Request:      request,
 		IsAdmin:      isAdmin,
@@ -483,6 +492,7 @@ func (h *RequestHandler) RequestEditGet(w http.ResponseWriter, r *http.Request) 
 		Author:       *user,
 		Documents:    files,
 		AllEquipment: allEquipment,
+		Results:      results,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -609,6 +619,9 @@ func (h *RequestHandler) CloseRequestPost(w http.ResponseWriter, r *http.Request
 	result := r.Form.Get("result_id")
 	resultId, _ := strconv.Atoi(result)
 
+	resultDescr := r.Form.Get("resultDescr")
+	fmt.Println(resultDescr)
+
 	equipId, err := h.reqService.RequestIsTheOnlyOne(requestId)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -633,7 +646,7 @@ func (h *RequestHandler) CloseRequestPost(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	err = h.reqService.CloseRequest(requestId, resultId)
+	err = h.reqService.CloseRequest(requestId, resultId, resultDescr)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		log.Println("Ошибка при закрытии заявки: ", err)
@@ -641,4 +654,31 @@ func (h *RequestHandler) CloseRequestPost(w http.ResponseWriter, r *http.Request
 	}
 
 	http.Redirect(w, r, "/allactive", http.StatusSeeOther)
+}
+
+func (h *RequestHandler) FormReport(w http.ResponseWriter, r *http.Request) {
+	requestId, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	cookie, err := r.Cookie("auth")
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при извлечении cookie: ", err)
+		return
+	}
+	parts := strings.Split(cookie.Value, "|")
+	if len(parts) != 2 {
+		http.Error(w, "Invalid Cookie Value", http.StatusInternalServerError)
+		return
+	}
+	adminLogin := parts[0]
+
+	report, err := h.reqService.FormReportForRequest(requestId, adminLogin)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(report)
 }

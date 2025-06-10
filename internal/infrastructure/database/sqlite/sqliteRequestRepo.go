@@ -274,7 +274,7 @@ func (r *RequestRepo) AddRequest(ctx context.Context, request domain.Request) er
 }
 
 func (r *RequestRepo) GetRequestById(ctx context.Context, id int) (request domain.Request, err error) {
-	query := `SELECT id, requestType, description, requestAuthor, status, createdAt, COALESCE(request.closedAt, '') as closedAt, equipment 
+	query := `SELECT id, requestType, description, requestAuthor, status, createdAt, COALESCE(request.closedAt, '') as closedAt, equipment, COALESCE(result, 0) as result, COALESCE(resultDescr, '') as resultDescr 
 			  FROM request WHERE id = ?`
 
 	row := r.db.QueryRowContext(ctx, query, id)
@@ -282,7 +282,7 @@ func (r *RequestRepo) GetRequestById(ctx context.Context, id int) (request domai
 		return request, err
 	}
 
-	err = row.Scan(&request.Id, &request.Type, &request.Description, &request.Author, &request.Status, &request.CreatedAt, &request.ClosedAt, &request.Equipment)
+	err = row.Scan(&request.Id, &request.Type, &request.Description, &request.Author, &request.Status, &request.CreatedAt, &request.ClosedAt, &request.Equipment, &request.Result, &request.ResultDescr)
 	if err != nil {
 		return request, err
 	}
@@ -328,7 +328,7 @@ func (r *RequestRepo) GetResults(ctx context.Context) (results []domain.RequestR
 }
 
 func (r *RequestRepo) GetRequestsWithEquipment(ctx context.Context, equipId int) (requests []domain.Request, err error) {
-	query := `SELECT id, requestType, description, requestAuthor, status, createdAt, COALESCE(closedAt, '') as closedAt, equipment, COALESCE(result, 0) as result
+	query := `SELECT id, requestType, description, requestAuthor, status, createdAt, COALESCE(closedAt, '') as closedAt, equipment, COALESCE(result, 0) as result, COALESCE(resultDescr, '') as resultDescr
 			  FROM request
 			  WHERE status = 1 AND equipment = ?`
 
@@ -340,7 +340,7 @@ func (r *RequestRepo) GetRequestsWithEquipment(ctx context.Context, equipId int)
 
 	for rows.Next() {
 		r := domain.Request{}
-		err = rows.Scan(&r.Id, &r.Type, &r.Description, &r.Author, &r.Author, &r.CreatedAt, &r.ClosedAt, &r.Equipment, &r.Result)
+		err = rows.Scan(&r.Id, &r.Type, &r.Description, &r.Author, &r.Author, &r.CreatedAt, &r.ClosedAt, &r.Equipment, &r.Result, &r.ResultDescr)
 		if err != nil {
 			return nil, err
 		}
@@ -349,14 +349,41 @@ func (r *RequestRepo) GetRequestsWithEquipment(ctx context.Context, equipId int)
 	return requests, nil
 }
 
-func (r *RequestRepo) CloseRequest(ctx context.Context, requestId int, resultId int, closedAt string) error {
+func (r *RequestRepo) CloseRequest(ctx context.Context, requestId int, resultId int, closedAt string, resultDescr string) error {
 	query := `UPDATE request
-			  SET status = 2, closedAt = ?, result = ?
+			  SET status = 2, closedAt = ?, result = ?, resultDescr = ?
 			  WHERE id = ?`
 
-	_, err := r.db.ExecContext(ctx, query, closedAt, resultId, requestId)
+	_, err := r.db.ExecContext(ctx, query, closedAt, resultId, resultDescr, requestId)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (r *RequestRepo) GetReportData(ctx context.Context, requestId int, userAdminLogin string) (report domain.RequestReport, err error) {
+	query := `  SELECT 
+				  	r.id, r.requestType, COALESCE(r.description, '') as description, r.createdAt, r.result, r.resultDescr, 
+				  	(SELECT u.name FROM users AS u WHERE u.login = ?),
+				  	e.invNum, e.purchDate, e.regDate,
+				  	ed.name || ' ' || ed.releaseYear,
+				  	dep.name || ' ' || depdiv.name
+			  	FROM
+					request AS r 
+					INNER JOIN equipment AS e ON r.equipment = e.id
+					INNER JOIN equipDirectory AS ed ON e.directory = ed.id
+					INNER JOIN department AS dep ON e.department = dep.id
+					INNER JOIN departmentDivisions AS depdiv ON dep.division = depdiv.id	
+				WHERE r.id = ?`
+
+	row := r.db.QueryRowContext(ctx, query, userAdminLogin, requestId)
+	if row.Err() != nil {
+		return domain.RequestReport{}, row.Err()
+	}
+	err = row.Scan(&report.RequestId, &report.TypeId, &report.Desctiption, &report.CreatedAt, &report.ResultId, &report.ResultDescr, &report.AuthorName, &report.Equipment.InvNum,
+		&report.Equipment.PurchDate, &report.Equipment.RegDate, &report.Equipment.Directory, &report.Equipment.Department)
+	if err != nil {
+		return domain.RequestReport{}, err
+	}
+	return report, nil
 }
