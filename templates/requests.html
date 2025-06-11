@@ -2,15 +2,16 @@
 <html lang="ru">
 {{define "content"}}
 
-    <header>
-        <nav>
-            <a href="/allactive">Активные заявки</a>
-            <a href="/allactive/{{.UserLogin}}">Мои активные заявки</a>
-            <a href="/allclosed">Закрытые заявки</a>
-            <a href="/allclosed/{{.UserLogin}}">Мои закрытые заявки</a>
-            <a href="/newRequest">Новая заявка</a>
-        </nav>
-    </header>
+    <div class="sub-header">
+    <nav class="sub-nav">
+        <a href="/allactive">Активные заявки</a>
+        <a href="/allactive/{{.UserLogin}}">Мои активные заявки</a>
+        <a href="/allclosed">Закрытые заявки</a>
+        <a href="/allclosed/{{.UserLogin}}">Мои закрытые заявки</a>
+        <a href="/newRequest">Новая заявка</a>
+    </nav>
+    </div>
+
 
     <div class="request-container">
         <h2>
@@ -39,9 +40,6 @@
             </div>
         {{end}}
 
-        <form action="/logout" method="GET">
-            <button type="submit">Выйти</button>
-        </form>
     </div>
 {{end}}
 </html>

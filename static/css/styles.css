@@ -388,3 +388,138 @@ input[type="file"] {
     color: #0077cc;
     text-decoration: none;
 }
+
+header.main-header {
+    background-color: #ffffff;
+    color: #333;
+    padding: 1.5rem 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom: 0;
+}
+
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 0;
+}
+
+/* Логотип и название */
+.logo-block {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-logo {
+    height: 50px;
+}
+
+.app-title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+/* Навигация по центру */
+.main-nav {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    flex-grow: 1;
+    margin-bottom: 0;
+}
+
+.main-nav a {
+    font-size: 1.1rem;
+    color: #2c3e50;
+    text-decoration: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+    margin-bottom: 0;
+}
+
+.main-nav a:hover {
+    background-color: #e6f0ff;
+}
+
+/* Выход справа */
+.logout-block form {
+    margin: 0;
+}
+
+.logout-btn {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    font-size: 1.1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.logout-btn:hover {
+    background-color: #c0392b;
+}
+
+.sub-header {
+    background-color: #f4f8fc; /* светло-голубой оттенок */
+    border-bottom: 1px solid #d0d8e0;
+    padding: 0.5rem 2rem;
+}
+
+.sub-nav {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.sub-nav a {
+    font-size: 1rem;
+    color: #2c3e50;
+    text-decoration: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.sub-nav a:hover {
+    background-color: #dbeeff;
+    color: #1a4d80;
+}
+
+.sub-header {
+    background-color: #f4f8fc;
+    border-bottom: 1px solid #d0d8e0;
+    padding: 0.5rem 2rem;
+    margin-top: -0.5rem; /* приближение к основной шапке */
+    border-radius: 0 0 10px 10px; /* только нижние края округляем */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* легкая тень для отделения */
+}
+
+.sub-nav {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.sub-nav a {
+    font-size: 1rem;
+    color: #2c3e50;
+    text-decoration: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.sub-nav a:hover {
+    background-color: #dbeeff;
+    color: #1a4d80;
+}

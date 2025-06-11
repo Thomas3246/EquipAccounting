@@ -1,30 +1,40 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>ТехУчет МАКС</title>
     <meta charset="UTF-8">
+    <title>ТехУчет МАКС</title>
     <link rel="stylesheet" href="/static/css/styles.css">
-
 </head>
 <body>
-    <!-- Общая шапка -->
-    <header>
-        <nav>
+    <!-- Шапка -->
+    <header class="main-header">
+    <div class="header-container">
+        <div class="logo-block">
+            <img src="/static/img/Maks-m.png" alt="МАКС‑М" class="header-logo">
+            <span class="app-title">ТехУчет</span>
+        </div>
+
+        <nav class="main-nav">
             <a href="/allactive">Заявки</a>
             {{if eq .IsAdmin 1}}
                 <a href="/users">Пользователи</a>
                 <a href="/equipment">Оборудование</a>
-                <a href="/equipmentDirectory">Справочник оборудования</a>
+                <a href="/equipmentDirectory">Справочник</a>
             {{end}}
         </nav>
-    </header>
 
-    <!-- Контентная часть (будет меняться) -->
+        <div class="logout-block">
+            <form action="/logout" method="POST">
+                <button type="submit" class="logout-btn">Выйти</button>
+            </form>
+        </div>
+    </div>
+</header>
+
+
+    <!-- Контент -->
     <main>
         {{template "content" .}}
     </main>
-
-    <!-- Общий футер -->
-    <!-- <footer>...</footer> -->
 </body>
 </html>

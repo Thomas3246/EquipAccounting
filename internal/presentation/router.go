@@ -25,7 +25,7 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 		r.Get("/login", h.UserHandler.LoginGet)
 		r.Post("/login", h.UserHandler.LoginPost)
 
-		r.Get("/logout", h.UserHandler.Logout)
+		r.Post("/logout", h.UserHandler.Logout)
 
 	})
 
