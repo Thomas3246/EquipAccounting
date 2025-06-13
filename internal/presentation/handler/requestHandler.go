@@ -683,8 +683,10 @@ func (h *RequestHandler) FormReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	headerFileName := fmt.Sprintf("attachment; filename=Акт по заявке №%d.docx", requestId)
+
 	w.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-	w.Header().Set("Content-Disposition", "attachment; filename=act_obslyj.docx")
+	w.Header().Set("Content-Disposition", headerFileName)
 	w.Header().Set("Content-Length", strconv.Itoa(len(reportBytes)))
 	if _, err := w.Write(reportBytes); err != nil {
 		http.Error(w, "Ошибка отправки файла", http.StatusInternalServerError)

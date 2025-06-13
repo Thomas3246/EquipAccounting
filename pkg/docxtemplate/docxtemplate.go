@@ -5,48 +5,86 @@ import (
 	"strings"
 
 	"baliance.com/gooxml/document"
+	"baliance.com/gooxml/measurement"
 )
 
-// ReplacePlaceholders открывает docx-файл по пути inputPath,
-// заменяет плейсхолдеры вида {{key}} значениями из replacements,
-// и возвращает результат как []byte.
 func ReplacePlaceholders(inputPath string, replacements map[string]string) ([]byte, error) {
 	doc, err := document.Open(inputPath)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, para := range doc.Paragraphs() {
-		runs := para.Runs()
-		if len(runs) == 0 {
+	addFormattedRun := func(para *document.Paragraph, text string) {
+		r := para.AddRun()
+		r.AddText(text)
+		r.Properties().SetFontFamily("Times New Roman")
+		r.Properties().SetSize(14 * measurement.Point)
+	}
+
+	paragraphs := doc.Paragraphs()
+	for i := range paragraphs {
+		para := &paragraphs[i]
+
+		var fullTextBuilder strings.Builder
+		for _, run := range para.Runs() {
+			fullTextBuilder.WriteString(run.Text())
+		}
+		fullText := fullTextBuilder.String()
+
+		hasReplacement := false
+		for key := range replacements {
+			if strings.Contains(fullText, "{{"+key+"}}") {
+				hasReplacement = true
+				break
+			}
+		}
+
+		if !hasReplacement {
 			continue
 		}
 
-		var fullText string
-		for _, run := range runs {
-			fullText += run.Text()
+		for len(para.Runs()) > 0 {
+			para.RemoveRun(para.Runs()[0])
 		}
 
-		updatedText := fullText
-		for key, val := range replacements {
-			placeholder := "{{" + key + "}}"
-			updatedText = strings.ReplaceAll(updatedText, placeholder, val)
-		}
-
-		if updatedText != fullText {
-			for i := len(runs) - 1; i >= 0; i-- {
-				para.RemoveRun(runs[i])
+		start := 0
+		for start < len(fullText) {
+			beginIdx := strings.Index(fullText[start:], "{{")
+			if beginIdx == -1 {
+				break
 			}
-			para.AddRun().AddText(updatedText)
+			beginIdx += start
+			endIdx := strings.Index(fullText[beginIdx:], "}}")
+			if endIdx == -1 {
+				break
+			}
+			endIdx += beginIdx + 2
+
+			if beginIdx > start {
+				normalText := fullText[start:beginIdx]
+				addFormattedRun(para, normalText)
+			}
+
+			placeholder := fullText[beginIdx:endIdx]
+			key := strings.TrimSuffix(strings.TrimPrefix(placeholder, "{{"), "}}")
+			if value, ok := replacements[key]; ok {
+				addFormattedRun(para, value)
+			} else {
+				addFormattedRun(para, placeholder)
+			}
+
+			start = endIdx
+		}
+
+		if start < len(fullText) {
+			remainingText := fullText[start:]
+			addFormattedRun(para, remainingText)
 		}
 	}
 
-	// Сохраняем документ в буфер
 	var buf bytes.Buffer
-	err = doc.Save(&buf)
-	if err != nil {
+	if err := doc.Save(&buf); err != nil {
 		return nil, err
 	}
-
 	return buf.Bytes(), nil
 }
