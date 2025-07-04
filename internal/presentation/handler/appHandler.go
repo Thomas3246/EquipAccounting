@@ -10,6 +10,7 @@ type AppHandler struct {
 	EquipmentHandler          *EquipmentHandler
 	EquipmentDirectoryHandler *EquipmentDirectoryHandler
 	DocumentHandler           *DocumentHandler
+	HardwareHandler           *HardwareHandler
 }
 
 func NewAppHandler(service *service.ApplicationService) *AppHandler {
@@ -19,5 +20,6 @@ func NewAppHandler(service *service.ApplicationService) *AppHandler {
 		EquipmentHandler:          NewEquipmentHandler(service.EquipmentService, service.EquipmentDirectoryService, service.DepartmentService),
 		EquipmentDirectoryHandler: NewEquipmentDirectoryHandler(service.EquipmentDirectoryService, service.EquipmentService),
 		DocumentHandler:           NewDocumentHandler(service.DocumentService, service.UserService),
+		HardwareHandler:           NewHardwareHandler(*service.HardwareService),
 	}
 }

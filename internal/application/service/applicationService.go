@@ -13,6 +13,7 @@ type ApplicationService struct {
 	DepartmentService         *DepartmentService
 	EquipmentDirectoryService *EquipmentDirectoryService
 	DocumentService           *DocumentService
+	HardwareService           *HardwareService
 }
 
 func NewAppService(db *sql.DB) *ApplicationService {
@@ -35,6 +36,9 @@ func NewAppService(db *sql.DB) *ApplicationService {
 	documentRepo := sqlite.NewDocumentRepo(db)
 	documentService := NewDocumentService(documentRepo)
 
+	hardwareRepo := sqlite.NewHardwareRepo(db)
+	hardwareService := NewHardwareService(hardwareRepo)
+
 	return &ApplicationService{
 		UserService:               userService,
 		RequestService:            requestService,
@@ -42,5 +46,6 @@ func NewAppService(db *sql.DB) *ApplicationService {
 		DepartmentService:         departmentService,
 		EquipmentDirectoryService: equipmentDirectoryService,
 		DocumentService:           documentService,
+		HardwareService:           hardwareService,
 	}
 }
