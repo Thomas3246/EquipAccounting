@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+{{define "content"}}
+
+<body>
+    <div class="form-container">
+        <h2>Редактирование комплектующего</h2>
+
+        <form method="POST" action="/hardware/{{.CurrentType}}/{{.Id}}">
+            <div class="form-group">
+                <label for="name">ID:</label>
+                <input type="text" id="id" name="id" value="{{.Unit.Id}}" readonly class="readonly">
+            </div>
+            
+            <div class="form-group">
+                <label for="name">Наименование:</label>
+                <input type="text" id="name" name="name" value="{{.Unit.Name}}" required class="form-input">
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+                <a href="/hardware" class="btn btn-secondary">Отмена</a>
+            </div>
+        </form>
+
+        <form id="delete-form" method="POST" action="/hardware/{{.CurrentType}}/{{.Id}}/delete" style="display: none;"></form>
+    </div>
+</body>
+
+{{end}}
+</html>

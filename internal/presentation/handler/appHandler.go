@@ -20,6 +20,6 @@ func NewAppHandler(service *service.ApplicationService) *AppHandler {
 		EquipmentHandler:          NewEquipmentHandler(service.EquipmentService, service.EquipmentDirectoryService, service.DepartmentService),
 		EquipmentDirectoryHandler: NewEquipmentDirectoryHandler(service.EquipmentDirectoryService, service.EquipmentService),
 		DocumentHandler:           NewDocumentHandler(service.DocumentService, service.UserService),
-		HardwareHandler:           NewHardwareHandler(*service.HardwareService),
+		HardwareHandler:           NewHardwareHandler(service.HardwareService),
 	}
 }

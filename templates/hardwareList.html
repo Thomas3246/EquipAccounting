@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+{{define "content"}}
+
+<body>
+    <div class="form-container">
+        <h2>Справочник комплектующих ПК</h2>
+
+        <div class="top-buttons">
+            <a href="/hardware/new" class="btn">Добавить комплектующее</a>
+        </div>
+
+        <form method="GET" action="/hardware" class="filter-form" id="filterForm">
+            <select name="type" onchange="document.getElementById('filterForm').submit()">
+                <option value="cpu" {{if eq .CurrentType "cpu" }}selected{{end}}>Процессоры</option>
+                <option value="gpu" {{if eq .CurrentType "gpu" }}selected{{end}}>Видеокарты</option>
+                <option value="motherboard" {{if eq .CurrentType "motherboard" }}selected{{end}}>Материнские платы</option>
+            </select>
+        </form>
+
+        {{if .Units}}
+            {{range .Units}}
+                <div class="equipment-item-container">
+                    
+                     <a href="/hardware/{{$.CurrentType}}/{{.Id}}" class="equipment-block">
+                        <div><strong>ID:</strong> {{.Id}}</div>
+                        <div><strong>Наименование:</strong> {{.Name}}</div>
+                    </a>
+
+                    <form action="/hardware/{{$.CurrentType}}/{{.Id}}/delete" method="POST" class="delete-form" 
+                          onsubmit="return confirm('Удалить комплектующее {{.Name}}?');">
+                        <button type="submit" class="btn btn-danger">Удалить</button>
+                    </form>
+                </div>
+            {{end}}
+        {{else}}
+            <p class="no-items">Справочник комплектующих пуст или ничего не найдено по выбранному фильтру</p>
+        {{end}}
+    </div>
+</body>
+
+{{end}}
+</html>

@@ -102,6 +102,13 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 
 			r.Get("/request/{id}/report", h.RequestHandler.FormReport)
 
+			// Hardware handlers
+
+			r.Get("/hardware", h.HardwareHandler.Units)
+
+			r.Get("/hardware/{type}/{id}", h.HardwareHandler.UnitGet)
+			r.Post("/hardware/{type}/{id}", h.HardwareHandler.UnitPost)
+
 		})
 
 	})
