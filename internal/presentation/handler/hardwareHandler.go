@@ -140,3 +140,69 @@ func (h *HardwareHandler) UnitPost(w http.ResponseWriter, r *http.Request) {
 	url := fmt.Sprintf("/hardware?type=%s", hType)
 	http.Redirect(w, r, url, http.StatusSeeOther)
 }
+
+func (h *HardwareHandler) NewUnitGet(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles(templateloader.GetTemplatePath("base.html"), templateloader.GetTemplatePath("newHardware.html"))
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		log.Println("Error by parse", err)
+		return
+	}
+
+	templData := struct {
+		IsAdmin int
+	}{
+		IsAdmin: 1,
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	err = tmpl.Execute(w, templData)
+	if err != nil {
+		http.Error(w, "Server Error", http.StatusInternalServerError)
+		log.Println("Template Execute Error: ", err)
+	}
+}
+
+func (h *HardwareHandler) NewUnitPost(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	name := r.Form.Get("name")
+	hType := r.Form.Get("unit_type")
+
+	err = h.hardwareService.NewUnit(hType, name)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при добавлении комплектующего: ", err)
+		return
+	}
+
+	http.Redirect(w, r, "/hardware?type=cpu", http.StatusSeeOther)
+}
+
+func (h *HardwareHandler) DeleteUnit(w http.ResponseWriter, r *http.Request) {
+	hType := chi.URLParam(r, "type")
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	err = h.hardwareService.DeleteUnit(hType, id)
+	if err != nil {
+		if err == service.ErrInvalidParameter {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка удаления комплектующего: ", err)
+		return
+	}
+
+	url := fmt.Sprintf("/hardware?type=%s", hType)
+	http.Redirect(w, r, url, http.StatusSeeOther)
+}

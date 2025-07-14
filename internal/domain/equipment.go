@@ -9,6 +9,11 @@ type Equipment struct {
 	DirectoryId  int
 	DepartmentId int
 	StatusId     int
+	CPU          CPU
+	GPU          GPU
+	Motherboard  Motherboard
+	RAM          int
+	Storage      int
 }
 
 type EquipmentView struct {

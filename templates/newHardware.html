@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+{{define "content"}}
+
+<body>
+    <div class="form-container">
+        <h2>Добавление нового комплектующего</h2>
+
+        <form action="/hardware/new" method="POST">
+             <div class="form-group">
+                <label for="unit_type">Тип заявки:</label>
+                <select name="unit_type" id="unit_type" required>
+                    <option value="" selected disabled>Выберите тип комплектующего</option>
+                    <option value="cpu">Процессор</option>
+                    <option value="gpu">Видеоадаптер</option>
+                    <option value="motherboard">Материнская плата</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Наименование: </label>
+                <input type="text" name="name" required>
+            </div>
+            
+            <button type="submit" class="btn">Добавить</button>
+        </form>
+    </div>
+</body>
+
+{{end}}
+</html>

@@ -17,7 +17,7 @@ func NewAppHandler(service *service.ApplicationService) *AppHandler {
 	return &AppHandler{
 		UserHandler:               NewUserHandler(service.UserService, service.DepartmentService),
 		RequestHandler:            NewRequestHandler(service.RequestService, service.UserService, service.EquipmentService, service.DocumentService),
-		EquipmentHandler:          NewEquipmentHandler(service.EquipmentService, service.EquipmentDirectoryService, service.DepartmentService),
+		EquipmentHandler:          NewEquipmentHandler(service.EquipmentService, service.EquipmentDirectoryService, service.DepartmentService, service.HardwareService),
 		EquipmentDirectoryHandler: NewEquipmentDirectoryHandler(service.EquipmentDirectoryService, service.EquipmentService),
 		DocumentHandler:           NewDocumentHandler(service.DocumentService, service.UserService),
 		HardwareHandler:           NewHardwareHandler(service.HardwareService),

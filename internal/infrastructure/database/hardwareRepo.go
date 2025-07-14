@@ -7,8 +7,9 @@ import (
 )
 
 type HardwareRepo interface {
-	GetEquipmentHardware(context.Context, int) (domain.Hardware, error)
 	GetUnitsByType(context.Context, string) ([]domain.Unit, error)
 	GetUnit(context.Context, string, int) (domain.Unit, error)
 	UpdateName(context.Context, string, int, string) error
+	NewUnit(context.Context, string, string) error
+	DeleteUnit(context.Context, string, int) error
 }

@@ -14,6 +14,7 @@ type EquipmentRepo interface {
 	GetEquipmentById(context.Context, int) (domain.Equipment, error)
 	GetEquipmentByInvNum(context.Context, string) (domain.Equipment, error)
 	UpdateEquipment(context.Context, domain.Equipment) error
+	UpdatePC(context.Context, domain.Equipment) error
 	DeleteEquipment(context.Context, int) error
 	AddEquipment(context.Context, domain.Equipment) error
 	ChangeEquipStatus(context.Context, int, int) error

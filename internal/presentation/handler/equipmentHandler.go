@@ -17,17 +17,20 @@ type EquipmentHandler struct {
 	EquipService              service.EquipmentService
 	EquipmentDirectoryService service.EquipmentDirectoryService
 	DepartmentService         service.DepartmentService
+	HardwareService           service.HardwareService
 }
 
 func NewEquipmentHandler(
 	equipService *service.EquipmentService,
 	equipmentDirectoryService *service.EquipmentDirectoryService,
 	depService *service.DepartmentService,
+	hardwareService *service.HardwareService,
 ) *EquipmentHandler {
 	return &EquipmentHandler{
 		EquipService:              *equipService,
 		EquipmentDirectoryService: *equipmentDirectoryService,
 		DepartmentService:         *depService,
+		HardwareService:           *hardwareService,
 	}
 }
 
@@ -141,6 +144,49 @@ func (h *EquipmentHandler) EquipmentGet(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	dir, err := h.EquipmentDirectoryService.GetEquipmentDirectory(equipment.DirectoryId)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при получении справочника оборудования: ", err)
+		return
+	}
+
+	isPC := false
+	if dir.TypeId == 5 {
+		isPC = true
+	}
+
+	cpus, err := h.HardwareService.GetUnitsByType("cpu")
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при получении справочника процессоров: ", err)
+		return
+	}
+
+	gpus, err := h.HardwareService.GetUnitsByType("gpu")
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при получении справочника видеокарт: ", err)
+		return
+	}
+
+	mbs, err := h.HardwareService.GetUnitsByType("motherboard")
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при получении справочника материнских плат: ", err)
+		return
+	}
+
+	units := struct {
+		CPUs []domain.Unit
+		GPUs []domain.Unit
+		MBs  []domain.Unit
+	}{
+		CPUs: cpus,
+		GPUs: gpus,
+		MBs:  mbs,
+	}
+
 	templData := struct {
 		IsAdmin     int
 		Equipment   domain.Equipment
@@ -149,6 +195,12 @@ func (h *EquipmentHandler) EquipmentGet(w http.ResponseWriter, r *http.Request) 
 		States      []domain.EquipmentState
 		InvNum      string
 		InvNumError string
+		IsPC        bool
+		Units       struct {
+			CPUs []domain.Unit
+			GPUs []domain.Unit
+			MBs  []domain.Unit
+		}
 	}{
 		IsAdmin:     1,
 		Equipment:   equipment,
@@ -157,6 +209,8 @@ func (h *EquipmentHandler) EquipmentGet(w http.ResponseWriter, r *http.Request) 
 		States:      states,
 		InvNum:      "",
 		InvNumError: "",
+		IsPC:        isPC,
+		Units:       units,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -204,12 +258,52 @@ func (h *EquipmentHandler) EquipmentPost(w http.ResponseWriter, r *http.Request)
 		StatusId:     status,
 	}
 
+	dir, err := h.EquipmentDirectoryService.GetEquipmentDirectory(equipment.DirectoryId)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при получении справочника оборудования: ", err)
+		return
+	}
+
+	var cpu, gpu, mb, ram, storage int
+
+	if dir.TypeId == 5 {
+		cpuStr := r.Form.Get("cpuId")
+		cpu, _ = strconv.Atoi(cpuStr)
+		equipment.CPU.Id = cpu
+
+		gpuStr := r.Form.Get("gpuId")
+		gpu, _ = strconv.Atoi(gpuStr)
+		equipment.GPU.Id = gpu
+
+		mbStr := r.Form.Get("mbId")
+		mb, _ = strconv.Atoi(mbStr)
+		equipment.Motherboard.Id = mb
+
+		ramStr := r.Form.Get("ram")
+		ram, _ = strconv.Atoi(ramStr)
+		equipment.RAM = ram
+
+		storageStr := r.Form.Get("storage")
+		storage, _ = strconv.Atoi(storageStr)
+		equipment.Storage = storage
+	}
+
 	if invNumIsFree {
-		err = h.EquipService.UpdateEquipment(equipment)
-		if err != nil {
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			log.Println("Ошибка при изменении админом оборудования: ", err)
-			return
+		if dir.TypeId == 5 {
+			err = h.EquipService.UpdatePC(equipment)
+			if err != nil {
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				log.Println("Ошибка при изменении админом ПК: ", err)
+				return
+			}
+		} else {
+			err = h.EquipService.UpdateEquipment(equipment)
+			if err != nil {
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				log.Println("Ошибка при изменении админом оборудования: ", err)
+				return
+			}
 		}
 		http.Redirect(w, r, "/equipment", http.StatusSeeOther)
 		return
@@ -262,6 +356,11 @@ func (h *EquipmentHandler) EquipmentPost(w http.ResponseWriter, r *http.Request)
 		States      []domain.EquipmentState
 		InvNum      string
 		InvNumError string
+		RAM         int
+		Storage     int
+		CPUId       int
+		GPUId       int
+		MBId        int
 	}{
 		IsAdmin:     1,
 		Equipment:   oldEquipment,
@@ -270,6 +369,14 @@ func (h *EquipmentHandler) EquipmentPost(w http.ResponseWriter, r *http.Request)
 		States:      states,
 		InvNum:      equipment.InvNum,
 		InvNumError: "Инвентарный номер занят",
+	}
+
+	if dir.TypeId == 5 {
+		templData.CPUId = cpu
+		templData.GPUId = gpu
+		templData.MBId = mb
+		templData.RAM = ram
+		templData.Storage = storage
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")

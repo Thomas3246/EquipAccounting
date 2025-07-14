@@ -138,7 +138,8 @@ func (r *EquipmentRepo) GetEquipmentViewByFilter(ctx context.Context, department
 }
 
 func (r *EquipmentRepo) GetEquipmentById(ctx context.Context, id int) (eq domain.Equipment, err error) {
-	query := `SELECT id, invNum, purchDate, regDate, COALESCE(decomDate, '') AS  decomDate, directory, department, status
+	query := `SELECT id, invNum, purchDate, regDate, COALESCE(decomDate, '') AS  decomDate, directory, department, status, 
+				COALESCE(cpu, 0) AS cpu, COALESCE(gpu, 0) AS gpu, COALESCE(motherboard, 0) AS motherboard, COALESCE(ram, 0) AS ram, COALESCE(storage, 0) AS storage  
 			  FROM equipment
 			  WHERE id = ?`
 
@@ -147,7 +148,7 @@ func (r *EquipmentRepo) GetEquipmentById(ctx context.Context, id int) (eq domain
 		return domain.Equipment{}, err
 	}
 
-	err = row.Scan(&eq.Id, &eq.InvNum, &eq.PurchDate, &eq.RegDate, &eq.DecomDate, &eq.DirectoryId, &eq.DepartmentId, &eq.StatusId)
+	err = row.Scan(&eq.Id, &eq.InvNum, &eq.PurchDate, &eq.RegDate, &eq.DecomDate, &eq.DirectoryId, &eq.DepartmentId, &eq.StatusId, &eq.CPU.Id, &eq.GPU.Id, &eq.Motherboard.Id, &eq.RAM, &eq.Storage)
 	if err != nil {
 		return domain.Equipment{}, err
 	}
@@ -177,6 +178,31 @@ func (r *EquipmentRepo) UpdateEquipment(ctx context.Context, equipment domain.Eq
 			  WHERE id = ?`
 
 	_, err := r.db.ExecContext(ctx, query, equipment.InvNum, equipment.DirectoryId, equipment.DepartmentId, equipment.StatusId, equipment.Id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *EquipmentRepo) UpdatePC(ctx context.Context, equipment domain.Equipment) error {
+	query := `UPDATE equipment 
+			  SET invNum = ?, directory = ?, department = ?, status = ?, ram = ?, storage = ?, cpu = ?, gpu = ?, motherboard = ?
+			  WHERE id = ?`
+
+	_, err := r.db.ExecContext(
+		ctx,
+		query,
+		equipment.InvNum,
+		equipment.DirectoryId,
+		equipment.DepartmentId,
+		equipment.StatusId,
+		equipment.RAM,
+		equipment.Storage,
+		equipment.CPU.Id,
+		equipment.GPU.Id,
+		equipment.Motherboard.Id,
+		equipment.Id,
+	)
 	if err != nil {
 		return err
 	}

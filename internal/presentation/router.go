@@ -72,6 +72,9 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 			r.Get("/equipment/new", h.EquipmentHandler.NewEquipmentGet)
 			r.Post("/equipment/new", h.EquipmentHandler.NewEquipmentPost)
 
+			r.Get("/equipment/newPC", h.EquipmentHandler.NewPCGEt)
+			r.Post("/equipment/newPC", h.EquipmentHandler.NewPCPost)
+
 			r.Post("/equipment/{id}/delete", h.EquipmentHandler.DeleteEquipment)
 
 			// Equipment Directory handlers
@@ -85,8 +88,6 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 			r.Post("/equipmentDirectory/new", h.EquipmentDirectoryHandler.NewDirectoryPost)
 
 			r.Post("/equipmentDirectory/{id}/delete", h.EquipmentDirectoryHandler.DeleteDirectory)
-
-			// Document handlers
 
 			r.Get("/request/{id}/addDocument", h.DocumentHandler.AddDocumentGet)
 			r.Post("/request/{id}/addDocument", h.DocumentHandler.AddDocumentPost)
@@ -108,6 +109,11 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 
 			r.Get("/hardware/{type}/{id}", h.HardwareHandler.UnitGet)
 			r.Post("/hardware/{type}/{id}", h.HardwareHandler.UnitPost)
+
+			r.Get("/hardware/new", h.HardwareHandler.NewUnitGet)
+			r.Post("/hardware/new", h.HardwareHandler.NewUnitPost)
+
+			r.Post("/hardware/{type}/{id}/delete", h.HardwareHandler.DeleteUnit)
 
 		})
 

@@ -1,15 +1,5 @@
 package domain
 
-type Hardware struct {
-	Id                   int
-	EquipmentDirectoryId int
-	CPU                  CPU
-	GPU                  GPU
-	Motherboard          Motherboard
-	RAM                  int
-	Storage              int
-}
-
 type Unit interface {
 	GetID() int
 	GetName() string

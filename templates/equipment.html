@@ -65,6 +65,46 @@
                 </select>
             </div>
 
+            {{if .IsPC}}
+                <div class="form-group">
+                    <label for="cpuId">Процессор:</label>
+                    <select id="cpuId" name="cpuId" required class="form-input">
+                        {{range .Units.CPUs}}
+                            <option value="{{.Id}}" {{if eq .Id $.Equipment.CPU.Id}}selected{{end}}>{{.Name}}</option>
+                        {{end}}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="gpuId">Видеокарта:</label>
+                    <select id="gpuId" name="gpuId" required class="form-input">
+                        {{range .Units.GPUs}}
+                            <option value="{{.Id}}" {{if eq .Id $.Equipment.GPU.Id}}selected{{end}}>{{.Name}}</option>
+                        {{end}}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="mbId">Материнская плата:</label>
+                    <select id="mbId" name="mbId" required class="form-input">
+                        {{range .Units.MBs}}
+                            <option value="{{.Id}}" {{if eq .Id $.Equipment.Motherboard.Id}}selected{{end}}>{{.Name}}</option>
+                        {{end}}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="ram">Объем ОЗУ:</label>
+                    <input type="number" id="ram" name="ram" value="{{.Equipment.RAM}}" class="form-input" required min="1">
+                </div>
+
+                <div class="form-group">
+                    <label for="storage">Объем памяти:</label>
+                    <input type="number" id="storage" name="storage" value="{{.Equipment.Storage}}" class="form-input" required min="1">
+                </div>
+                
+            {{end}}
+
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">Сохранить</button>
                 <a href="/equipment" class="btn btn-secondary">Отмена</a>
