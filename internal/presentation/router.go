@@ -72,7 +72,7 @@ func NewRouter(h *handler.AppHandler) *chi.Mux {
 			r.Get("/equipment/new", h.EquipmentHandler.NewEquipmentGet)
 			r.Post("/equipment/new", h.EquipmentHandler.NewEquipmentPost)
 
-			r.Get("/equipment/newPC", h.EquipmentHandler.NewPCGEt)
+			r.Get("/equipment/newPC", h.EquipmentHandler.NewPCGet)
 			r.Post("/equipment/newPC", h.EquipmentHandler.NewPCPost)
 
 			r.Post("/equipment/{id}/delete", h.EquipmentHandler.DeleteEquipment)

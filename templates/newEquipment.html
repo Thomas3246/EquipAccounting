@@ -23,9 +23,11 @@
                 <select name="directory_id" required>
                     <option value="" selected disabled>Выберите тип оборудования</option>
                     {{ range .Directories }}
+                    {{if ne .Id 5}}
                         <option value="{{ .Id }}" {{ if eq .Id $.SelectedDir }}selected{{ end }}>
                             {{ .Name }} - {{ .ReleaseYear }} ( {{ .Type }} )
                         </option>
+                    {{ end }}
                     {{ end }}
                 </select>
             </div>

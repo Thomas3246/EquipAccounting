@@ -17,10 +17,12 @@
                 {{end}}
             </div>
 
+            {{if not .IsPC}}
             <div class="form-group">
                 <label for="purchDate">Дата приобретения:</label>
                 <input type="text" id="purchDate" name="purchDate" value="{{.Equipment.PurchDate}}" readonly class="form-input readonly">
             </div>
+            {{end}}
 
             <div class="form-group">
                 <label for="regDate">Дата постановки на учет:</label>

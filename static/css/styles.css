@@ -91,6 +91,17 @@ select {
     text-decoration: none;
 }
 
+.top-buttons-equip {
+    display: flex;
+    justify-content: flex-start; /* или 'center', 'flex-end' в зависимости от нужного выравнивания */
+    gap: 10px; /* добавит промежуток между кнопками */
+    margin-bottom: 20px;
+}
+
+.top-buttons-equip a {
+    text-decoration: none;
+}
+
 .request-container {
     width: 85%;
     padding: 20px;
@@ -412,6 +423,13 @@ header.main-header {
     display: flex;
     align-items: center;
     gap: 15px;
+}
+
+.logo-block a {
+    text-decoration: none;
+    display: flex;       
+    align-items: center;  
+    gap: 15px;          
 }
 
 .header-logo {

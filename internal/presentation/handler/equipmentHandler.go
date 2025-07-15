@@ -457,6 +457,90 @@ func (h *EquipmentHandler) NewEquipmentGet(w http.ResponseWriter, r *http.Reques
 	}
 }
 
+func (h *EquipmentHandler) NewPCGet(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles(templateloader.GetTemplatePath("base.html"), templateloader.GetTemplatePath("newPC.html"))
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		log.Println("Error by parse", err)
+		return
+	}
+
+	directories, err := h.EquipmentDirectoryService.GetEquipmentDirectoriesViewByFilter(5)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при получении оборудования: ", err)
+		return
+	}
+
+	departments, err := h.DepartmentService.GetDepartmentsView()
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при получении оборудования: ", err)
+		return
+	}
+
+	cpus, err := h.HardwareService.GetUnitsByType("cpu")
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при получении процессоров: ", err)
+		return
+	}
+
+	gpus, err := h.HardwareService.GetUnitsByType("gpu")
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при получении видеокарт: ", err)
+		return
+	}
+
+	mbs, err := h.HardwareService.GetUnitsByType("motherboard")
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при получении материнских плат: ", err)
+		return
+	}
+
+	templData := struct {
+		IsAdmin       int
+		Departments   []domain.DepartmentView
+		Directories   []domain.EquipmentDirectoryView
+		InvNum        string
+		InvNumError   string
+		SelectedDept  int
+		SelectedDir   int
+		CPUs          []domain.Unit
+		GPUs          []domain.Unit
+		MBs           []domain.Unit
+		SelectedCPUId int
+		SelectedGPUId int
+		SelectedMBId  int
+		RAM           int
+		Storage       int
+	}{
+		IsAdmin:       1,
+		Departments:   departments,
+		Directories:   directories,
+		InvNum:        "",
+		InvNumError:   "",
+		SelectedDept:  0,
+		SelectedDir:   0,
+		CPUs:          cpus,
+		GPUs:          gpus,
+		MBs:           mbs,
+		SelectedCPUId: 0,
+		SelectedGPUId: 0,
+		SelectedMBId:  0,
+		RAM:           0,
+		Storage:       0,
+	}
+
+	err = tmpl.Execute(w, templData)
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		log.Println("Error by execute", err)
+	}
+}
+
 func (h *EquipmentHandler) NewEquipmentPost(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -542,6 +626,150 @@ func (h *EquipmentHandler) NewEquipmentPost(w http.ResponseWriter, r *http.Reque
 		DirectoryId:  directoryId,
 		DepartmentId: departmentId,
 		PurchDate:    purchDate,
+	}
+
+	err = h.EquipService.NewEquipment(equipment)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка добавления оборудования: ", err)
+		return
+	}
+
+	http.Redirect(w, r, "/equipment", http.StatusSeeOther)
+}
+
+func (h *EquipmentHandler) NewPCPost(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	invNum := r.FormValue("inv_num")
+	directoryStr := r.FormValue("directory_id")
+	directoryId, _ := strconv.Atoi(directoryStr)
+	departmentStr := r.FormValue("department_id")
+	departmentId, _ := strconv.Atoi(departmentStr)
+
+	cpuStr := r.FormValue("cpuId")
+	cpuId, _ := strconv.Atoi(cpuStr)
+
+	gpuStr := r.FormValue("gpuId")
+	gpuId, _ := strconv.Atoi(gpuStr)
+
+	mbStr := r.FormValue("mbId")
+	mbId, _ := strconv.Atoi(mbStr)
+
+	ramStr := r.FormValue("ram")
+	ram, _ := strconv.Atoi(ramStr)
+
+	storageStr := r.FormValue("storage")
+	storage, _ := strconv.Atoi(storageStr)
+
+	isFree, err := h.EquipService.CheckInvNumForFree(invNum)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Ошибка при проверке инв. номера: ", err)
+		return
+	}
+
+	if !isFree {
+		tmpl, err := template.ParseFiles(templateloader.GetTemplatePath("base.html"), templateloader.GetTemplatePath("newPC.html"))
+		if err != nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			log.Println("Error by parse", err)
+			return
+		}
+
+		departments, err := h.DepartmentService.GetDepartmentsView()
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			log.Println("Ошибка при получении оборудования: ", err)
+			return
+		}
+
+		directories, err := h.EquipmentDirectoryService.GetEquipmentDirectoriesViewByFilter(5)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			log.Println("Ошибка при получении оборудования: ", err)
+			return
+		}
+
+		cpus, err := h.HardwareService.GetUnitsByType("cpu")
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			log.Println("Ошибка при получении процессоров: ", err)
+			return
+		}
+
+		gpus, err := h.HardwareService.GetUnitsByType("gpu")
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			log.Println("Ошибка при получении видеокарт: ", err)
+			return
+		}
+
+		mbs, err := h.HardwareService.GetUnitsByType("motherboard")
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			log.Println("Ошибка при получении материнских плат: ", err)
+			return
+		}
+
+		templData := struct {
+			IsAdmin       int
+			Departments   []domain.DepartmentView
+			Directories   []domain.EquipmentDirectoryView
+			InvNum        string
+			InvNumError   string
+			SelectedDept  int
+			SelectedDir   int
+			CPUs          []domain.Unit
+			GPUs          []domain.Unit
+			MBs           []domain.Unit
+			SelectedCPUId int
+			SelectedGPUId int
+			SelectedMBId  int
+			RAM           int
+			Storage       int
+		}{
+			IsAdmin:       1,
+			Departments:   departments,
+			Directories:   directories,
+			InvNum:        invNum,
+			InvNumError:   "",
+			SelectedDept:  departmentId,
+			SelectedDir:   directoryId,
+			CPUs:          cpus,
+			GPUs:          gpus,
+			MBs:           mbs,
+			SelectedCPUId: cpuId,
+			SelectedGPUId: gpuId,
+			SelectedMBId:  mbId,
+			RAM:           ram,
+			Storage:       storage,
+		}
+
+		if !isFree {
+			templData.InvNumError = "Инвентарный номер занят"
+		}
+
+		err = tmpl.Execute(w, templData)
+		if err != nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			log.Println("Error by execute", err)
+		}
+		return
+	}
+
+	equipment := domain.Equipment{
+		InvNum:       invNum,
+		DirectoryId:  directoryId,
+		DepartmentId: departmentId,
+		CPU:          domain.CPU{Id: cpuId, Name: ""},
+		GPU:          domain.GPU{Id: gpuId, Name: ""},
+		Motherboard:  domain.Motherboard{Id: mbId, Name: ""},
+		RAM:          ram,
+		Storage:      storage,
 	}
 
 	err = h.EquipService.NewEquipment(equipment)

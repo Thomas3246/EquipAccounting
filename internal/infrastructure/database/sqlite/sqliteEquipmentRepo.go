@@ -210,10 +210,11 @@ func (r *EquipmentRepo) UpdatePC(ctx context.Context, equipment domain.Equipment
 }
 
 func (r *EquipmentRepo) AddEquipment(ctx context.Context, equipment domain.Equipment) error {
-	query := `INSERT INTO equipment (invNum, purchDate, regDate, directory, department, status)
-			  VALUES (?, ?, ?, ?, ?, ?)`
+	query := `INSERT INTO equipment (invNum, purchDate, regDate, directory, department, status, ram, storage, cpu, gpu, motherboard)
+			  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
-	_, err := r.db.ExecContext(ctx, query, equipment.InvNum, equipment.PurchDate, equipment.RegDate, equipment.DirectoryId, equipment.DepartmentId, equipment.StatusId)
+	_, err := r.db.ExecContext(ctx, query, equipment.InvNum, equipment.PurchDate, equipment.RegDate, equipment.DirectoryId, equipment.DepartmentId, equipment.StatusId,
+		equipment.RAM, equipment.Storage, equipment.CPU.Id, equipment.GPU.Id, equipment.Motherboard.Id)
 	if err != nil {
 		return err
 	}
